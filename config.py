@@ -18,18 +18,18 @@ import os
 
 
 # strings: Your personal name and the name of your blog:
-AUTHOR_NAME = u'Karl Voit'
-BLOG_NAME = u'public voit'
+AUTHOR_NAME = u'yqrashawn'
+BLOG_NAME = u'YQ'
 
 ## strings: Define your URLs and your name below:
-DOMAIN = u'Karl-Voit.at'
+DOMAIN = u'yqrashawn.com'
 BASE_URL = u'//' + DOMAIN
 CSS_URL = BASE_URL + '/public_voit.css'
 BLOG_LOGO = BASE_URL + '/images/public-voit_logo.svg'
-DISQUS_NAME = 'publicvoit'  # gets placed in: '//publicvoit.disqus.com/embed.js'
+DISQUS_NAME = 'yqrashawn'  # gets placed in: '//publicvoit.disqus.com/embed.js'
 
 ## string: Email address to send comments to:
-COMMENT_EMAIL_ADDRESS = 'publicvoit-comment@Karl-Voit.at'
+COMMENT_EMAIL_ADDRESS = 'namy.19@gmail.com'
 
 ## integer: Show this many article teasers on entry page
 NUMBER_OF_TEASER_ARTICLES = 25
@@ -38,8 +38,8 @@ NUMBER_OF_TEASER_ARTICLES = 25
 NUMBER_OF_TOP_TAGS = 10
 
 ## list of strings: tags to ignore when generating misc things:
-IGNORE_FOR_TOP_TAGS = ['suderei', 'personally']
-IGNORE_FOR_TAG_CLOUD = ['suderei', 'personally', 'hardware', 'software']
+IGNORE_FOR_TOP_TAGS = ['personally']
+IGNORE_FOR_TAG_CLOUD = ['personally']
 
 ## integer: Show this many article in Atom feeds:
 NUMBER_OF_FEED_ARTICLES = 25
@@ -51,7 +51,7 @@ ID_OF_ABOUT_PAGE = '2014-03-09-about'
 
 ## string: Your Twitter handle/username which is used in the HTML header
 ##         metadata (without the @ character)
-TWITTER_HANDLE = 'n0v0id'
+TWITTER_HANDLE = 'yqrashawn'
 
 ## string: An image which is added to the HTML header metadata and is used
 ##         by Twitter in Twitter cards to visualize your blog (also used
@@ -60,7 +60,7 @@ TWITTER_IMAGE = 'http://Karl-Voit.at/images/public-voit_T_logo_200x200.png'
 
 ## string: Replace "+01:00" below with your time-zone indicator
 ## This string gets added to the time strings in order to describe time zone of the blog:
-TIME_ZONE_ADDON = u'+01:00'
+TIME_ZONE_ADDON = u'+08:00'
 
 ## string: Customized link key for linking image files within an article
 ## See https://www.gnu.org/software/emacs/manual/html_node/org/Link-abbreviations.html

@@ -1671,7 +1671,7 @@ class Htmlizer(object):
             # FIXXME: other languages than german have to be added
             # here: (generalize using a configured list of known
             # languages?)
-            if 'language' in entry['autotags'].keys() and entry['autotags']['language'] == 'deutsch':
+            if 'autotags' in entry.keys() and 'language' in entry['autotags'].keys() and entry['autotags']['language'] == 'deutsch':
                 content += self.template_definition_by_name('backreference-header-de')
             else:
                 content += self.template_definition_by_name('backreference-header-en')
