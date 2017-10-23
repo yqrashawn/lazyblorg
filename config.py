@@ -24,8 +24,9 @@ BLOG_NAME = u'YQ'
 ## strings: Define your URLs and your name below:
 DOMAIN = u'yqrashawn.com'
 BASE_URL = u'//' + DOMAIN
-CSS_URL = BASE_URL + '/public_voit.css'
-BLOG_LOGO = BASE_URL + '/images/public-voit_logo.svg'
+# CSS_URL = BASE_URL + '/YQ.css'
+CSS_URL = '../../.././templates/public_voit.css'
+BLOG_LOGO = BASE_URL + '/images/YQ_logo.png'
 DISQUS_NAME = 'yqrashawn'  # gets placed in: '//publicvoit.disqus.com/embed.js'
 
 ## string: Email address to send comments to:

@@ -40,8 +40,8 @@ a {
     padding-right: 1em; }
 
   .middle_section_wide, header, .published-on, footer, .temporal-article-header-nav, .month-overview-header-nav, .entrypage-article-header-nav, .persistent-article-header-nav {
-    margin-left: auto;
-    margin-right: auto;
+    margin-left: 0 auto;
+    margin-right: 0 auto;
     max-width: 45em; }
 
   /* show/hide sidebar stolen from: https://css-tricks.com/off-canvas-menu-with-css-target/
@@ -104,8 +104,8 @@ a {
     padding-right: 1em; }
 
   .middle_section_wide, header, .published-on, footer, .temporal-article-header-nav, .month-overview-header-nav, .entrypage-article-header-nav, .persistent-article-header-nav {
-    margin-left: auto;
-    margin-right: auto;
+    margin-left: 0 auto;
+    margin-right: 0 auto;
     max-width: 45em; }
 
   .sidebar {
@@ -174,8 +174,8 @@ a {
     max-width: 40em; }
 
   .middle_section_wide, header, .published-on, footer, .temporal-article-header-nav, .month-overview-header-nav, .entrypage-article-header-nav, .persistent-article-header-nav {
-    margin-left: auto;
-    margin-right: auto;
+    margin-left: 0 auto;
+    margin-right: 0 auto;
     max-width: 60em; }
 
   .sidebar {
@@ -208,8 +208,8 @@ a {
     max-width: 40em; }
 
   .middle_section_wide, header, .published-on, footer, .temporal-article-header-nav, .month-overview-header-nav, .entrypage-article-header-nav, .persistent-article-header-nav {
-    margin-left: auto;
-    margin-right: auto;
+    margin-left: 0 auto;
+    margin-right: 0 auto;
     max-width: 60em; }
 
   .sidebar {
@@ -234,7 +234,8 @@ a {
       padding-top: 1em;
       padding-bottom: 1em;
       padding-right: 1em;*/
-  border-radius: 1em;
+  /* border-radius: 1em; */
+  clear: both;
   box-shadow: inset 0 2px 0 rgba(188, 147, 200, 0.7), -5px -4px 25px rgba(0, 0, 0, 0.3);
   background: #f9f9f9;
   margin-bottom: 20px;

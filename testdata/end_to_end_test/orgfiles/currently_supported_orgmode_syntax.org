@@ -1,6 +1,6 @@
 # -*- mode: org; coding: utf-8; ispell-local-dictionary: "german8"; -*-
 
-* DONE lazyblorg: Syntax-tests of the Currently Supported Org-mode Syntax Elements from the Parser and HTMLizer :hidden:publicvoit:lazyblorg:MixedCaseTag:blog:
+* DONE lazyblorg: Syntax-tests of the Currently Supported Org-mode Syntax Elements from the Parser and HTMLizer :lazyblorg:blog:
 CLOSED: [2014-01-30 Thu 13:01]
 :LOGBOOK:
 - State "DONE"       from "DONE"       [2014-02-01 Sat 15:03]
