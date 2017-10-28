@@ -19,14 +19,14 @@ import os
 
 # strings: Your personal name and the name of your blog:
 AUTHOR_NAME = u'yqrashawn'
-BLOG_NAME = u'YQ'
+BLOG_NAME = u'infin'
 
 ## strings: Define your URLs and your name below:
 DOMAIN = u'yqrashawn.com'
 BASE_URL = u'//' + DOMAIN
 # CSS_URL = BASE_URL + '/YQ.css'
-CSS_URL = '../../.././templates/public_voit.css'
-MATERIAL_CSS_URL = '../../.././templates/surface-1.02/docs/css/surface_styles.css'
+CSS_URL = 'http://127.0.0.1:8081/templates/public_voit.css'
+MENU_JS_URL = 'http://127.0.0.1:8081/templates/menu.js'
 BLOG_LOGO = BASE_URL + '/images/YQ_logo.png'
 DISQUS_NAME = 'yqrashawn'  # gets placed in: '//publicvoit.disqus.com/embed.js'
 

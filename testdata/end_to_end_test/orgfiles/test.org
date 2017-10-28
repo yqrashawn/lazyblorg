@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 * after watching
-** DONE Halt and Catch Fire                                           :blog:
+** DONE Halt and Catch Fire                                           :watching:blog:
 CLOSED: [2017-10-22 Sun 08:51]
 :PROPERTIES:
 :CREATED:  [2017-10-22 Sun 08:53]

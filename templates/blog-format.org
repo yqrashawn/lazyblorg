@@ -65,20 +65,45 @@ Have fun with modifying lazyblorg to your requirements!
 
 *** Sidebar
 
+# <div class="search">
+#   <iframe id="search-big" src="//duckduckgo.com/search.html?width=140&site=#DOMAIN#&prefill=Search%20blog"></iframe>
+#   <iframe id="search-narrow" src="//duckduckgo.com/search.html?width=70&k1=-1&k2=s&site=#DOMAIN#&prefill=Search"></iframe>
+#   <br/>
+# </div>
+# <li><a href="#BASE-URL#">Recent articles</a></li>
 #+NAME: common-sidebar
 #+BEGIN_EXPORT HTML
 
-  <a id="show-sidebar-text" href="#show-sidebar">Show Sidebar</a>
+
+  <div class="menu-espanso">
+    <div id="menu-group">
+      <div id="menu" class="menu">
+      <div id="menu-in" class="menu-in"></div>
+      </div>
+      <span class="menu-closer"></span>
+      <span class="linee linea1"></span>
+      <span class="linee linea2"></span>
+      <span class="linee linea3"></span>
+    </div>
+    <div class="voci-menu">
+      <ul>
+        <li><a href="#">Articolo prova</a></li>
+        <li><a href="#">Testo segnaposto</a></li>
+        <li><a href="#">Contatti</a></li>
+        <li><a href="#">Prova testo</a></li>
+        <li><a href="#">Prova testo uno</a></li>
+        <li><a href="#">Prova test due</a></li>
+      </ul>
+    </div>
+  </div>
+  
+  <!-- <a id="show-sidebar-text" href="#show-sidebar">Show Sidebar</a>
   <div class="sidebar toggle-sidebar">
-     <div class="search">
-       <iframe id="search-big" src="//duckduckgo.com/search.html?width=140&site=#DOMAIN#&prefill=Search%20blog"></iframe>
-       <iframe id="search-narrow" src="//duckduckgo.com/search.html?width=70&k1=-1&k2=s&site=#DOMAIN#&prefill=Search"></iframe>
-       <br/>
-     </div>
+  
+      
      <ul>
-     <li><a href="#BASE-URL#">Recent articles</a></li>
      <li>[[id:#ABOUT-PAGE-ID#][About this blog]]</li>
-     <li><img src="#BASE-URL#/images/feed-icon-14x14.png" alt="RSS icon" />&nbsp;Subscribe to one of my feeds:</li>
+     <li>Subscribe to one of my feeds:</li>
          <ul>
          <li><span style="font-size:small"><a href="#BASE-URL#/feeds/lazyblorg-all.atom_1.0.links-only.xml">links only feed</a> (most reliable)</span></li>
          <li><span style="font-size:small"><a href="#BASE-URL#/feeds/lazyblorg-all.atom_1.0.links-and-teaser.xml">article teaser feed</a></span></li>
@@ -89,7 +114,7 @@ Have fun with modifying lazyblorg to your requirements!
               #TOP-TAG-LIST#
          </ul>
      </ul>
-  </div>
+  </div> -->
 
 #+END_EXPORT
 
@@ -297,10 +322,36 @@ With name/label:
 - #ARTICLE-ID#: Org-mode ID property of the blog entry
 
 
+
+# <div class="entry-page-greetings">
+# <p>
+
+#   This is the home-page of #AUTHOR-NAME#.
+
+# </p>
+
+# <p>
+
+#   On this page you can see the latest blog updates. For further articles, please use the <b>search bar</b> or <b>navigate through <a href="tags/">the blue tags</a></b>.
+#   My recommendations are <a href="tags/pim/">pim</a>, <a href="tags/privacy/">privacy</a>, or <a href="tags/security/">security</a>.
+
+# </p>
+
+# <p>
+
+#   <a href="how-to-use-public-voit/">I recommend</a> any decent <a href="https://en.wikipedia.org/wiki/RSS">RSS</a>/<a href="https://en.wikipedia.org/wiki/Atom_(standard)">Atom aggregator</a> to get notified on blog updates.
+
+# </p>
+
+# <p>
+
+#   Most recent articles or updates:
+
+# </p>
 #+NAME: entrypage-header
 #+BEGIN_EXPORT HTML
   <!DOCTYPE html>
-  <html xmlns="http://www.w3.org/1999/xhtml">
+  <html>
   <head>
   <meta charset="UTF-8">
   <meta name="author" content="#AUTHOR-NAME#" />
@@ -316,6 +367,8 @@ With name/label:
   <link rel="alternate" type="application/atom+xml"
         title="#BLOG-NAME# (full content)" href="#FEEDURL_CONTENT#" />
 
+  <script type="text/javascript" src="#MENU-JS-URL#"></script>
+
   <!-- WARNING: This page is written in HTML5 and might not be displayed correctly in old browsers. -->
 
   <title>#BLOG-NAME# - Homepage of #AUTHOR-NAME#</title>
@@ -327,42 +380,21 @@ With name/label:
 
       <nav class="entrypage-article-header-nav">
         <span class="breadcrumbs">
-          <!-- <img src="#BLOG-LOGO#" alt="#BLOG-NAME# logo" width="350" style="vertical-align:middle;"><span style="padding-top:1em;"> -->
+          <!-- <img src="#BLOG-LOGO#" alt="#BLOG-NAME# logo" width="30" style="vertical-align:middle;"> -->
+          <h0>
+            <a href="/">#BLOG-NAME#</a>
+          </h0>
         </span>
       </nav>
 
   </header>
 
-  #COMMON-SIDEBAR#
-
-  <div class="entry-page-greetings">
-  <p>
-
-    This is the home-page of #AUTHOR-NAME#.
-
-  </p>
-
   <!--
-  <p>
-
-    On this page you can see the latest blog updates. For further articles, please use the <b>search bar</b> or <b>navigate through <a href="tags/">the blue tags</a></b>.
-    My recommendations are <a href="tags/pim/">pim</a>, <a href="tags/privacy/">privacy</a>, or <a href="tags/security/">security</a>.
-
-  </p>
+  #COMMON-SIDEBAR#
   -->
-
-  <p>
-
-    <a href="how-to-use-public-voit/">I recommend</a> any decent <a href="https://en.wikipedia.org/wiki/RSS">RSS</a>/<a href="https://en.wikipedia.org/wiki/Atom_(standard)">Atom aggregator</a> to get notified on blog updates.
-
-  </p>
-
-  <p>
-
-    Most recent articles or updates:
-
-  </p>
+  #COMMON-SIDEBAR#
   </div>
+  <container>
 
 #+END_EXPORT
 
@@ -381,7 +413,6 @@ With name/label:
 
 #+NAME: article-preview-header
 #+BEGIN_EXPORT HTML
-
 
 <article class="entry-page-article">
 #+END_EXPORT
@@ -437,11 +468,7 @@ placeholder article which is defined in this file (below).
 
 #+NAME: article-preview-end
 #+BEGIN_EXPORT HTML
-
-
 </article>
-
-
 #+END_EXPORT
 
 **** Footer
@@ -452,6 +479,7 @@ placeholder article which is defined in this file (below).
 #+BEGIN_EXPORT HTML
 
 
+    </container>
     <footer>
       <p><i>[[id:#ABOUT-PAGE-ID#][#BLOG-NAME#]]</i> is authored in <a href="//orgmode.org">Org-mode</a> and generated by <a href="https://github.com/novoid/lazyblorg">lazyblorg</a>
 
@@ -493,6 +521,7 @@ placeholder article which is defined in this file (below).
         title="#BLOG-NAME# (article teasers)" href="#FEEDURL_TEASER#" />
   <link rel="alternate" type="application/atom+xml"
         title="#BLOG-NAME# (full content)" href="#FEEDURL_CONTENT#" />
+  <script type="text/javascript" src="#MENU-JS-URL#"></script>
 
   <!-- WARNING: This page is written in HTML5 and might not be displayed correctly in old browsers. -->
 
@@ -514,17 +543,18 @@ placeholder article which is defined in this file (below).
   human readable format (e.g., 2011-10-30T15:00)
 - #COMMON-SIDEBAR# : the sidebar content which is shared on all pages
 
+# <div class="common-orgsource"><a href="source.org.txt">&#960;</a></div>
+
 #+NAME: persistent-header-begin
 #+BEGIN_EXPORT HTML
   <body>
 
-    <div class="common-orgsource"><a href="source.org.txt">&#960;</a></div>
 
 	<header>
 
 	  <nav class="persistent-article-header-nav">
 	    <span class="breadcrumbs">
-	      <a href="../"><img src="#BLOG-LOGO#" alt="#BLOG-NAME# logo" width="350" style="vertical-align:middle;"></a>
+	      <a href="../">#BLOG-NAME#</a>
 	    </span>
 	  </nav>
 
@@ -640,6 +670,7 @@ placeholder article which is defined in this file (below).
         title="#BLOG-NAME# (article teasers)" href="#FEEDURL_TEASER#" />
   <link rel="alternate" type="application/atom+xml"
         title="#BLOG-NAME# (full content)" href="#FEEDURL_CONTENT#" />
+  <script type="text/javascript" src="#MENU-JS-URL#"></script>
 
   <!-- WARNING: This page is written in HTML5 and might not be displayed correctly in old browsers. -->
 
@@ -661,18 +692,19 @@ placeholder article which is defined in this file (below).
   human readable format (e.g., 2011-10-30T15:00)
 - #COMMON-SIDEBAR# : the sidebar content which is shared on all pages
 
+ # <div class="common-orgsource"><a href="source.org.txt">&#960;</a></div>
+
 #+NAME: article-header-begin
 #+BEGIN_EXPORT HTML
   <body>
 
-    <div class="common-orgsource"><a href="source.org.txt">&#960;</a></div>
 
 
 	<header>
 
 	  <nav class="temporal-article-header-nav">
 	    <span class="breadcrumbs">
-	      <a href="../../../../"><img src="#BLOG-LOGO#" alt="#BLOG-NAME# logo" width="350" style="vertical-align:middle;"></a><span style="padding-top:1em;">&nbsp;&nbsp;&nbsp;&nbsp;&raquo;
+	      <a href="../../../../">#BLOG-NAME#</a><span style="padding-top:1em;">&nbsp;&nbsp;&nbsp;&nbsp;&raquo;
 	      <a href="../../../">#ARTICLE-YEAR#</a>&nbsp;&ndash;&nbsp;<a href="../../">#ARTICLE-MONTH#</a>&nbsp;&ndash;&nbsp;<a href="../">#ARTICLE-DAY#</a></span>
 	    </span>
 	  </nav>
@@ -822,6 +854,7 @@ A single page which is used as template for =example.com/tags/index.html=.
         title="#BLOG-NAME# (article teasers)" href="#FEEDURL_TEASER#" />
   <link rel="alternate" type="application/atom+xml"
         title="#BLOG-NAME# (full content)" href="#FEEDURL_CONTENT#" />
+  <script type="text/javascript" src="#MENU-JS-URL#"></script>
 
   <!-- WARNING: This page is written in HTML5 and might not be displayed correctly in old browsers. -->
 
@@ -840,7 +873,7 @@ A single page which is used as template for =example.com/tags/index.html=.
 
 	  <nav class="temporal-article-header-nav">
 	    <span class="breadcrumbs">
-	      <a href="../"><img src="#BLOG-LOGO#" alt="#BLOG-NAME# logo" width="350" style="vertical-align:middle;"></a><span style="padding-top:1em;">&nbsp;&nbsp;&nbsp;&nbsp;&raquo;Tags</span>
+	      <a href="../">#BLOG-NAME#</a><span style="padding-top:1em;">&nbsp;&nbsp;&nbsp;&nbsp;&raquo;Tags</span>
 	    </span>
 	  </nav>
 
@@ -938,6 +971,7 @@ Pages that describe a tag. Corresponding Org-mode entries must have:
         title="#BLOG-NAME# (article teasers)" href="#FEEDURL_TEASER#" />
   <link rel="alternate" type="application/atom+xml"
         title="#BLOG-NAME# (full content)" href="#FEEDURL_CONTENT#" />
+  <script type="text/javascript" src="#MENU-JS-URL#"></script>
 
   <!-- WARNING: This page is written in HTML5 and might not be displayed correctly in old browsers. -->
 
@@ -959,18 +993,19 @@ Pages that describe a tag. Corresponding Org-mode entries must have:
   human readable format (e.g., 2011-10-30T15:00)
 - #COMMON-SIDEBAR# : the sidebar content which is shared on all pages
 
+# <div class="common-orgsource"><a href="source.org.txt">&#960;</a></div>
+
 #+NAME: tagpage-header-begin
 #+BEGIN_EXPORT HTML
   <body>
 
-    <div class="common-orgsource"><a href="source.org.txt">&#960;</a></div>
 
 
 	<header>
 
 	  <nav class="temporal-article-header-nav">
 	    <span class="breadcrumbs">
-	      <a href="../../../../"><img src="#BLOG-LOGO#" alt="#BLOG-NAME# logo" width="350" style="vertical-align:middle;"></a><span style="padding-top:1em;">&nbsp;&nbsp;&nbsp;&nbsp;&raquo;<a href="../">Tags</a>&nbsp;&nbsp;&nbsp;&nbsp;&raquo;#ARTICLE-TITLE#</span>
+	      <a href="../../../../">#BLOG-NAME#</a><span style="padding-top:1em;">&nbsp;&nbsp;&nbsp;&nbsp;&raquo;<a href="../">Tags</a>&nbsp;&nbsp;&nbsp;&nbsp;&raquo;#ARTICLE-TITLE#</span>
 	    </span>
 	  </nav>
 
@@ -1070,6 +1105,7 @@ FIXXME
         title="#BLOG-NAME# (article teasers)" href="#FEEDURL_TEASER#" />
   <link rel="alternate" type="application/atom+xml"
         title="#BLOG-NAME# (full content)" href="#FEEDURL_CONTENT#" />
+  <script type="text/javascript" src="#MENU-JS-URL#"></script>
 
   <!-- WARNING: This page is written in HTML5 and might not be displayed correctly in old browsers. -->
 
@@ -1084,8 +1120,12 @@ FIXXME
 
 	  <nav class="month-overview-header-nav">
 	    <span class="breadcrumbs">
-	      <a href="../../"><img src="#BLOG-LOGO#" alt="#BLOG-NAME# logo" width="350" style="vertical-align:middle;"></a><span style="padding-top:1em;">&nbsp;&nbsp;&nbsp;&nbsp;&raquo;
-	      #YEAR#&nbsp;&ndash;&nbsp;#MONTH-TWODIGITNUMBER#</span>
+	      <a href="../../">
+          #BLOG-NAME#
+        </a>
+        <span style="padding-top:1em;">&nbsp;&nbsp;&nbsp;&nbsp;&raquo;
+	      #YEAR#&nbsp;&ndash;&nbsp;#MONTH-TWODIGITNUMBER#
+        </span>
 	    </span>
 	  </nav>
 
