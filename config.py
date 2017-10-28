@@ -26,6 +26,7 @@ DOMAIN = u'yqrashawn.com'
 BASE_URL = u'//' + DOMAIN
 # CSS_URL = BASE_URL + '/YQ.css'
 CSS_URL = '../../.././templates/public_voit.css'
+MATERIAL_CSS_URL = '../../.././templates/surface-1.02/docs/css/surface_styles.css'
 BLOG_LOGO = BASE_URL + '/images/YQ_logo.png'
 DISQUS_NAME = 'yqrashawn'  # gets placed in: '//publicvoit.disqus.com/embed.js'
 
