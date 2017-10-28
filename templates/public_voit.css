@@ -1,10 +1,11 @@
 /*  ------------------------------------------
  *  Generic stuff
  *  ------------------------------------------ */
+@import url(https://fonts.googleapis.com/css?family=Roboto+Slab);
 body {
     background: #e8e8e1;
     color: #252525;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-family: 'Roboto Slab', serif;
     margin: 0px;
 }
 
@@ -508,7 +509,7 @@ footer {
     @extend .middle_section_narrow;
 }
 .persistent-body h1 {
-    font-size: 100%;
+    font-size: 105%;
     color: black;
 }
 
@@ -616,7 +617,7 @@ footer {
     height: 49px;
     width: 49px;
     border-radius: 50%;
-    background-color: #EE283D;
+    background-color: #176069;
     border: none;
     transition: all 0.40s ease-out;
     box-shadow: 0 16px 28px 0 rgba(0, 0, 0, 0.22);
