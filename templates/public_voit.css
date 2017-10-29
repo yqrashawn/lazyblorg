@@ -36,11 +36,17 @@ container {
     font-size: 100%;
     color: #990000;
 }
-.persistent-header .entrypage-article-header-nav {
+
+/* .persistent-header .entrypage-article-header-nav { */
+.common-header-nav, .temporal-article-header-nav, .month-overview-header-nav, .entrypage-article-header-nav, .persistent-article-header-nav {
     z-index: 2;
     top: 0;
     position: fixed;
     width: 100%;
+}
+
+.common-tags {
+    padding-top: 3em;
 }
 
 /* ======================== */
@@ -231,6 +237,7 @@ container {
     /*     height: 0px; */
     /* } */
 }
+
 .common-header-nav, .temporal-article-header-nav, .month-overview-header-nav, .entrypage-article-header-nav, .persistent-article-header-nav {
     padding: 0.9em;
     clear: both;
@@ -366,7 +373,7 @@ container {
 
 .common-article-header-title {
     padding-bottom: 1em;
-    padding-top: 2em;
+    padding-top: 4em;
     margin-left: 20%;
     margin-right: 20%;
 }
