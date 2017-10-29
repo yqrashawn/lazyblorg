@@ -71,6 +71,8 @@ class Lazyblorg(object):
         @param return: increment_version: list of IDs of articles in blog_data/metadata that got a new version
         """
 
+        # logging.info(os.environ["YQ_BLOG_DEV_MODE"])
+        # logging.info(config.CSS_URL)
         options = self.options
         stats_parsed_org_files, stats_parsed_org_lines = 0, 0
 

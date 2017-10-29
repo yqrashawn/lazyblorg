@@ -24,10 +24,14 @@ BLOG_NAME = u'infin'
 ## strings: Define your URLs and your name below:
 DOMAIN = u'yqrashawn.com'
 BASE_URL = u'//' + DOMAIN
-# CSS_URL = 'http://127.0.0.1:8081/lazyblorg/templates/public_voit.css'
-# MENU_JS_URL = 'http://127.0.0.1:8081/lazyblorg/templates/menu.js'
-CSS_URL = BASE_URL + '/public/css/YQ.css'
-MENU_JS_URL = BASE_URL + '/public/js/menu.js'
+
+if os.environ["YQ_BLOG_DEV_MODE"] == "true":
+    CSS_URL = 'http://127.0.0.1:8089/lazyblorg/templates/public_voit.css'
+    MENU_JS_URL = 'http://127.0.0.1:8089/lazyblorg/templates/menu.js'
+else:
+    CSS_URL = BASE_URL + '/public/css/YQ.css'
+    MENU_JS_URL = BASE_URL + '/public/js/menu.js'
+
 BLOG_LOGO = BASE_URL + '/public/img/YQ_logo.png'
 DISQUS_NAME = 'yqrashawn'  # gets placed in: '//publicvoit.disqus.com/embed.js'
 
