@@ -27,6 +27,8 @@ BASE_URL = u'//' + DOMAIN
 # CSS_URL = BASE_URL + '/YQ.css'
 CSS_URL = 'http://127.0.0.1:8081/templates/public_voit.css'
 MENU_JS_URL = 'http://127.0.0.1:8081/templates/menu.js'
+# CSS_URL = 'http://127.0.0.1:8081/templates/public_voit.css'
+# MENU_JS_URL = 'http://127.0.0.1:8081/templates/menu.js'
 BLOG_LOGO = BASE_URL + '/images/YQ_logo.png'
 DISQUS_NAME = 'yqrashawn'  # gets placed in: '//publicvoit.disqus.com/embed.js'
 
