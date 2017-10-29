@@ -1,11 +1,12 @@
 /*  ------------------------------------------
  *  Generic stuff
  *  ------------------------------------------ */
-@import url(https://fonts.googleapis.com/css?family=Roboto+Slab);
+@import url('https://fonts.googleapis.com/css?family=Inconsolata');
+
 body {
     background: #e8e8e1;
     color: #252525;
-    font-family: 'Roboto Slab', serif;
+    font-family: 'Inconsolata', monospace;
     margin: 0px;
 }
 
