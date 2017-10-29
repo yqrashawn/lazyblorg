@@ -665,8 +665,8 @@ footer {
 }
 
 .over {
-    width: 2000px;
-    height: 2000px;
+    width: 4000px;
+    height: 4000px;
     transition: all 0.350s ease-in;
     cursor: default;
 }
