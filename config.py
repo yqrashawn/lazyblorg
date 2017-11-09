@@ -28,6 +28,9 @@ BASE_URL = u'//' + DOMAIN
 if os.environ["YQ_BLOG_DEV_MODE"] == "true":
     CSS_URL = 'http://127.0.0.1:8089/lazyblorg/templates/public_voit.css'
     MENU_JS_URL = 'http://127.0.0.1:8089/lazyblorg/templates/menu.js'
+    HIGHLIGHT_URL = 'http://127.0.0.1:8089/lazyblorg/templates/highlight'
+    HIGHLIGHT_JS = HIGHLIGHT_URL + '.pack.js'
+    HIGHLIGHT_CSS = HIGHLIGHT_URL + '.routeros.css'
 else:
     CSS_URL = BASE_URL + '/public/css/YQ.css'
     MENU_JS_URL = BASE_URL + '/public/js/menu.js'

@@ -416,8 +416,9 @@ blockquote br {
 .example_code {
     width: auto;
     background-color: #fff;
-    padding: 5px;
-    border: 1px solid #e0e0e0;
+    /* padding: 5px; */
+    /* syntax highlight */
+    /* border: 1px solid #e0e0e0; */
     font-size: 14px;
     font-family: "courier new";
 }

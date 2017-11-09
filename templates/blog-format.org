@@ -200,10 +200,12 @@ Without name/label:
 
 	  <div class="example_code">
 	  <pre>
+    <code>
 #+END_EXPORT
 
 #+NAME: src-end
 #+BEGIN_EXPORT HTML
+    </code>
 	  </pre>
     </div>
 
@@ -361,6 +363,7 @@ With name/label:
   <link rel="alternate" type="application/atom+xml"
         title="#BLOG-NAME# (full content)" href="#FEEDURL_CONTENT#" />
 
+  <script type="text/javascript" src="#HIGHLIGHT-JS#"></script>
   <script type="text/javascript" src="#MENU-JS-URL#"></script>
 
   <!-- WARNING: This page is written in HTML5 and might not be displayed correctly in old browsers. -->
@@ -515,8 +518,8 @@ placeholder article which is defined in this file (below).
         title="#BLOG-NAME# (article teasers)" href="#FEEDURL_TEASER#" />
   <link rel="alternate" type="application/atom+xml"
         title="#BLOG-NAME# (full content)" href="#FEEDURL_CONTENT#" />
+  <script type="text/javascript" src="#HIGHLIGHT-JS#"></script>
   <script type="text/javascript" src="#MENU-JS-URL#"></script>
-
   <!-- WARNING: This page is written in HTML5 and might not be displayed correctly in old browsers. -->
 
       <title>#ARTICLE-TITLE#</title>
@@ -664,6 +667,7 @@ placeholder article which is defined in this file (below).
         title="#BLOG-NAME# (article teasers)" href="#FEEDURL_TEASER#" />
   <link rel="alternate" type="application/atom+xml"
         title="#BLOG-NAME# (full content)" href="#FEEDURL_CONTENT#" />
+  <script type="text/javascript" src="#HIGHLIGHT-JS#"></script>
   <script type="text/javascript" src="#MENU-JS-URL#"></script>
 
   <!-- WARNING: This page is written in HTML5 and might not be displayed correctly in old browsers. -->
@@ -848,6 +852,7 @@ A single page which is used as template for =example.com/tags/index.html=.
         title="#BLOG-NAME# (article teasers)" href="#FEEDURL_TEASER#" />
   <link rel="alternate" type="application/atom+xml"
         title="#BLOG-NAME# (full content)" href="#FEEDURL_CONTENT#" />
+  <script type="text/javascript" src="#HIGHLIGHT-JS#"></script>
   <script type="text/javascript" src="#MENU-JS-URL#"></script>
 
   <!-- WARNING: This page is written in HTML5 and might not be displayed correctly in old browsers. -->
@@ -965,6 +970,7 @@ Pages that describe a tag. Corresponding Org-mode entries must have:
         title="#BLOG-NAME# (article teasers)" href="#FEEDURL_TEASER#" />
   <link rel="alternate" type="application/atom+xml"
         title="#BLOG-NAME# (full content)" href="#FEEDURL_CONTENT#" />
+  <script type="text/javascript" src="#HIGHLIGHT-JS#"></script>
   <script type="text/javascript" src="#MENU-JS-URL#"></script>
 
   <!-- WARNING: This page is written in HTML5 and might not be displayed correctly in old browsers. -->
@@ -1099,6 +1105,7 @@ FIXXME
         title="#BLOG-NAME# (article teasers)" href="#FEEDURL_TEASER#" />
   <link rel="alternate" type="application/atom+xml"
         title="#BLOG-NAME# (full content)" href="#FEEDURL_CONTENT#" />
+  <script type="text/javascript" src="#HIGHLIGHT-JS#"></script>
   <script type="text/javascript" src="#MENU-JS-URL#"></script>
 
   <!-- WARNING: This page is written in HTML5 and might not be displayed correctly in old browsers. -->

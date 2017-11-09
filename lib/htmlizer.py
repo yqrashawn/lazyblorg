@@ -1927,6 +1927,8 @@ class Htmlizer(object):
         content = content.replace('#BASE-URL#', config.BASE_URL)
         content = content.replace('#CSS-URL#', config.CSS_URL)
         content = content.replace('#MENU-JS-URL#', config.MENU_JS_URL)
+        content = content.replace('#HIGHLIGHT-JS#', config.HIGHLIGHT_JS)
+        content = content.replace('#HIGHLIGHT-CSS#', config.HIGHLIGHT_CSS)
         content = content.replace('#AUTHOR-NAME#', config.AUTHOR_NAME)
         content = content.replace('#BLOG-NAME#', config.BLOG_NAME)
         content = content.replace('#BLOG-LOGO#', config.BLOG_LOGO)
