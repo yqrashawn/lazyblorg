@@ -180,7 +180,11 @@ assertTag(TAG_FOR_TEMPLATES_ENTRY)
 
 
 ## if an entry is tagged with this, it will be omitted in feeds, the main page, and navigation pages; tag is shown in result page
-TAG_FOR_HIDDEN = u'hidden'
+
+if os.environ["YQ_BLOG_DEV_MODE"] == "true":
+    TAG_FOR_HIDDEN = u'haha'
+else:
+    TAG_FOR_HIDDEN = u'hidden'
 
 assertTag(TAG_FOR_HIDDEN)
 
