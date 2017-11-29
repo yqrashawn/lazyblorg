@@ -34,6 +34,8 @@ if os.environ["YQ_BLOG_DEV_MODE"] == "true":
 else:
     CSS_URL = BASE_URL + '/public/css/YQ.css'
     MENU_JS_URL = BASE_URL + '/public/js/menu.js'
+    HIGHLIGHT_JS = BASE_URL + '/public/js/' + 'highlight.pack.js'
+    HIGHLIGHT_CSS = BASE_URL + '/public/css/' + 'highlight.routeros.css'
 
 BLOG_LOGO = BASE_URL + '/public/img/YQ_logo.png'
 DISQUS_NAME = 'yqrashawn'  # gets placed in: '//publicvoit.disqus.com/embed.js'

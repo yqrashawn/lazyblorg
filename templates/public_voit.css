@@ -867,3 +867,12 @@ body.mode-search .control .btn {
 .header .header-content h1, .header .header-content h2 {
     font-weight: 200;
 }
+
+.example_code pre {
+    white-space: normal;
+    padding: 15px 0;
+}
+
+.example_code pre code {
+    white-space: pre;
+}
