@@ -24,18 +24,20 @@ BLOG_NAME = u'infin'
 ## strings: Define your URLs and your name below:
 DOMAIN = u'yqrashawn.com'
 BASE_URL = u'//' + DOMAIN
+PUBLIC_JS = BASE_URL + '/public/js/'
+PUBLIC_CSS = BASE_URL + '/public/css/'
 
 if os.environ["YQ_BLOG_DEV_MODE"] == "true":
     CSS_URL = 'http://127.0.0.1:8089/lazyblorg/templates/public_voit.css'
     MENU_JS_URL = 'http://127.0.0.1:8089/lazyblorg/templates/menu.js'
     HIGHLIGHT_URL = 'http://127.0.0.1:8089/lazyblorg/templates/highlight'
-    HIGHLIGHT_JS = HIGHLIGHT_URL + '.pack.js'
-    HIGHLIGHT_CSS = HIGHLIGHT_URL + '.routeros.css'
+    HIGHLIGHT_JS = PUBLIC_JS + 'highlight.pack.js'
+    HIGHLIGHT_CSS = PUBLIC_CSS + 'highlight.routeros.css'
 else:
     CSS_URL = BASE_URL + '/public/css/YQ.css'
     MENU_JS_URL = BASE_URL + '/public/js/menu.js'
-    HIGHLIGHT_JS = BASE_URL + '/public/js/' + 'highlight.pack.js'
-    HIGHLIGHT_CSS = BASE_URL + '/public/css/' + 'highlight.routeros.css'
+    HIGHLIGHT_JS = PUBLIC_JS + 'highlight.pack.js'
+    HIGHLIGHT_CSS = PUBLIC_CSS + 'highlight.routeros.css'
 
 BLOG_LOGO = BASE_URL + '/public/img/YQ_logo.png'
 DISQUS_NAME = 'yqrashawn'  # gets placed in: '//publicvoit.disqus.com/embed.js'
@@ -178,7 +180,11 @@ assertTag(TAG_FOR_TEMPLATES_ENTRY)
 
 
 ## if an entry is tagged with this, it will be omitted in feeds, the main page, and navigation pages; tag is shown in result page
-TAG_FOR_HIDDEN = u'hidden'
+
+if os.environ["YQ_BLOG_DEV_MODE"] == "true":
+    TAG_FOR_HIDDEN = u'haha'
+else:
+    TAG_FOR_HIDDEN = u'hidden'
 
 assertTag(TAG_FOR_HIDDEN)
 
