@@ -204,7 +204,7 @@ container {
     /*     height: 6em; */
     /* } */
 }
-@media (min-width: 74em) {
+@media (min-width: 74em) print {
     .middle_section_narrow, .common-tags, .entry-page-article .entry-page-article-tags, .common-article, .entry-page-article, .common-article-header-title, blockquote, .example_code, .email-comment, #disqus_thread, .entry-page-greetings, .back-references {
         margin-left: auto;
         margin-right: auto;
@@ -385,7 +385,7 @@ container {
 
 .section-title {
     color: #252525;
-    margin-left: 1em;
+    /* margin-left: 1em; */
 }
 
 .orgmode-hr {
