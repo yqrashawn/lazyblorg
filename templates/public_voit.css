@@ -354,6 +354,7 @@ container {
 }
 
 .common-article, .entry-page-article {
+    line-height: 1.4em;
     margin-left: auto;
     margin-right: auto;
 }
