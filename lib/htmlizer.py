@@ -1,5 +1,5 @@
 # -*- coding: utf-8; mode: python; -*-
-# Time-stamp: <2017-10-29 13:00:09 vk>
+# Time-stamp: <2017-12-26 18:00:48 vk>
 
 import config  # lazyblorg-global settings
 import sys
@@ -182,12 +182,13 @@ class Htmlizer(object):
         self.dict_of_tags_with_ids = self._populate_dict_of_tags_with_ids(
             self.blog_data)
 
-        entry_list_by_newest_timestamp, stats_generated_total, stats_generated_temporal, \
-            stats_generated_persistent, stats_generated_tags = self._generate_pages_for_tags_persistent_temporal()
-
         dummy_age = 0  # FIXXME: replace with age in days since last usage
         # tags = list of lists with [tagname, count of tag usage, age in days of last usage]:
         tags = [[tag, len(self.dict_of_tags_with_ids[tag]), dummy_age] for tag in self.dict_of_tags_with_ids.keys()]
+
+        entry_list_by_newest_timestamp, stats_generated_total, stats_generated_temporal, \
+            stats_generated_persistent, stats_generated_tags = self._generate_pages_for_tags_persistent_temporal(tags)
+
         self._generate_tag_overview_page(tags)
 
         self._generate_feeds(entry_list_by_newest_timestamp)
@@ -294,10 +295,11 @@ class Htmlizer(object):
 
         return dict_of_tags_with_ids
 
-    def _generate_pages_for_tags_persistent_temporal(self):
+    def _generate_pages_for_tags_persistent_temporal(self, tags):
         """
         Method that creates the pages for tag-pages, persistent pages, and temporal pages.
 
+        @param: tags: dict of the form TAGS = [['python', 28059, 3], [tagname, count, age_in_days]]
         @param: return: stats_generated_total: total articles generated
         @param: return: stats_generated_temporal: temporal articles generated
         @param: return: stats_generated_persistent: persistent articles generated
@@ -369,7 +371,7 @@ class Htmlizer(object):
         stats_generated_tags += stats_generated_empty_tags
 
         entry_list_by_newest_timestamp = self.generate_entry_list_by_newest_timestamp()
-        self.generate_entry_page(entry_list_by_newest_timestamp)
+        self.generate_entry_page(entry_list_by_newest_timestamp, tags)
         stats_generated_total += 1
 
         return entry_list_by_newest_timestamp, stats_generated_total, stats_generated_temporal, \
@@ -710,10 +712,11 @@ class Htmlizer(object):
             key=lambda entry: entry['latestupdateTS'],
             reverse=True)
 
-    def generate_entry_page(self, entry_list_by_newest_timestamp):
+    def generate_entry_page(self, entry_list_by_newest_timestamp, tags):
         """
         Generates and writes the blog entry page with sneak previews of the most recent articles/updates.
 
+        @param: tags: dict of the form TAGS = [['python', 28059, 3], [tagname, count, age_in_days]]
         @param: entry_list_by_newest_timestamp: a sorted list like [ {'id':'a-new-entry', 'latestupdateTS':datetime(), 'url'="<URL>"}, {...}]
         """
 
@@ -851,6 +854,10 @@ class Htmlizer(object):
         htmlcontent = self._replace_general_article_placeholders(
             entry, htmlcontent)
 
+        htmlcontent = htmlcontent.replace(
+            '#TAGOVERVIEW-CLOUD#',
+            self._generate_tag_cloud(tags))
+
         htmlcontent = self.sanitize_internal_links(
             config.ENTRYPAGE, htmlcontent)
         self.write_content_to_file(entry_page_filename, htmlcontent)
@@ -923,7 +930,7 @@ class Htmlizer(object):
                     break
                 css_age += 1
 
-            result += '<li><a href="' + tag + '/" class="tagcloud-usertag tagcloud-size-' + \
+            result += '<li><a href="' + config.BASE_URL + '/tags/' + tag + '/" class="tagcloud-usertag tagcloud-size-' + \
                       str(css_size) + ' tagcloud-age-' + str(css_age) + '">' + tag + '</a></li>\n'
 
         return result
@@ -1256,17 +1263,31 @@ class Htmlizer(object):
                 # ]    -> attr_html attributes (dict)
 
                 filename = self.locate_cust_link_image(entry['content'][index][1])
+
+                # check if filename is the original one or was replaced by a similar one:
                 if filename != entry['content'][index][1]:
                     # write back new filename if an alternative filename was derived:
                     logging.info('filename ' + filename + ' is an alternative to ' + entry['content'][index][1])
                     entry['content'][index][1] = filename
 
+                # issue a warning if
+                # WARN_IF_IMAGE_FILE_NOT_TAGGED_WITH is non-empty and
+                # the tag is not found in the filename
+                if config.WARN_IF_IMAGE_FILE_NOT_TAGGED_WITH and \
+                   len(config.WARN_IF_IMAGE_FILE_NOT_TAGGED_WITH) > 0 and \
+                   not Utils.contains_tag(filename, config.WARN_IF_IMAGE_FILE_NOT_TAGGED_WITH):
+                    self.logging.warning('WARN_IF_IMAGE_FILE_NOT_TAGGED_WITH("' +
+                                         config.WARN_IF_IMAGE_FILE_NOT_TAGGED_WITH + '"): filename "' + filename +
+                                         '" of entry [[id:' + entry['id'] + ']] does not contain the tag')
+
                 description = entry['content'][index][2]
                 caption = entry['content'][index][3]
                 attributes = entry['content'][index][4]
 
+                # start building the result string
                 result = '\n' + '<figure'
 
+                # apply alignment things
                 if 'align' in attributes.keys():
                     if attributes['align'].lower() in ['left', 'right', 'float-left', 'float-right', 'center']:
                         result += ' class="image-' + attributes['align'].lower() + '"'
@@ -1276,6 +1297,7 @@ class Htmlizer(object):
                     # if no alignment is given, use center:
                     result += ' class="image-center"'
 
+                # get scaled image filename
                 result += '>\n<img src="' + self.get_scaled_filename(filename, attributes).replace(' ', '%20') + '" '
 
                 # FIXXME: currently, all other attributes are ignored:
@@ -1288,16 +1310,22 @@ class Htmlizer(object):
 
                 result += '/>'
 
+                # determine, if a caption (of a description) is necessary:
                 if description == filename:
                     # If filename equals description, omit it because it does not make sense to me:
                     description = None
                 if description and caption:
+                    # We've got both: a description and a caption. I'm
+                    # deciding to use the description in those cases
+                    # and issue a warning:
                     self.logging.warning(self.current_entry_id_str() + 'a customized image had description *and* caption. I used the caption: [' +
                                          repr(entry['content'][index][1:]) + ']')
                     description = caption
                 elif caption:
+                    # a caption always results in a caption of course
                     description = caption
                 if description:
+                    # generate the figcaption
                     result += '\n<figcaption>' + description + '</figcaption>'
 
                 result += '\n</figure>\n'
@@ -1674,8 +1702,8 @@ class Htmlizer(object):
             if 'autotags' in entry.keys():
                 if 'language' in entry['autotags'].keys() and entry['autotags']['language'] == 'deutsch':
                     content += self.template_definition_by_name('backreference-header-de')
-            else:
-                content += self.template_definition_by_name('backreference-header-en')
+                else:
+                    content += self.template_definition_by_name('backreference-header-en')
 
             for back_reference_id in sorted(list(entry['back-references'])):
 

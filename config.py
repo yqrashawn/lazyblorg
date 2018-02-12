@@ -113,6 +113,15 @@ DIRECTORIES_WITH_IMAGE_ORIGINALS = ["testdata/testimages",
                                     os.path.join(os.path.expanduser("~"), *"blog/archive/digicam".split('/')),
                                     os.path.join(os.path.expanduser("~"), *"blog/archive/fromweb".split('/'))]
 
+## string: a filetags-tag - see
+## http://karl-voit.at/managing-digital-photographs/ and
+## https://github.com/novoid/filetags for explanation of filetags
+## EMPTY if no check is enforced
+## If not empty: Contains a tag which should be part of any image
+## file included. If the image file does not contain this filetag,
+## a warning is issued in the console output.
+WARN_IF_IMAGE_FILE_NOT_TAGGED_WITH="publicvoit"
+
 ## ===================================================================== ##
 ##                                                                       ##
 ##  These are INTERNAL lazyblorg-global configuration settings.          ##
