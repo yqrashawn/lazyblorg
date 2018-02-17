@@ -577,6 +577,9 @@ class TestHtmlizer(unittest.TestCase):
         self.assertTrue(htmlizer.htmlize_simple_text_formatting(u"=This= is =verbatim= and =verbatim style=. With =end=") ==
                         u"<code>This</code> is <code>verbatim</code> and <code>verbatim style</code>. With <code>end</code>")
 
+        self.assertTrue(htmlizer.htmlize_simple_text_formatting(u"+This+ is +strike through+ and +strike through style+. With +end+") ==
+                        u"<s>This</s> is <s>strike through</s> and <s>strike through style</s>. With <s>end</s>")
+
         # real-world examples:
 
         # testing bold at begin and end of line:
