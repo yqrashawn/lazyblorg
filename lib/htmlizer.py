@@ -104,6 +104,9 @@ class Htmlizer(object):
     # find ~code or source text~ (teletype):
     CODE_REGEX = re.compile(u'(\W|\A)~([^~]+)~(\W|\Z)', flags=re.U)
 
+    # find +strike through text+ (teletype):
+    STRIKE_THROUGH_REGEX = re.compile(u'(\W|\A)\+([^~]+)\+(\W|\Z)', flags=re.U)
+
     # find =verbatim text= (teletype):
     VERBATIM_REGEX = re.compile(u'(\W|\A)=([^=]+)=(\W|\Z)', flags=re.U)
 
@@ -1442,6 +1445,8 @@ class Htmlizer(object):
         content = re.subn(self.BOLD_REGEX, ur'\1<b>\2</b>\3', content)[0]
         content = re.subn(self.CODE_REGEX, ur'\1<code>\2</code>\3', content)[0]
         content = re.subn(self.VERBATIM_REGEX, ur'\1<code>\2</code>\3', content)[0]
+        content = re.subn(self.STRIKE_THROUGH_REGEX, ur'\1<s>\2</s>\3', content)[0]
+
 
         assert(isinstance(content, unicode))
 
