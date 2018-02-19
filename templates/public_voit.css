@@ -877,3 +877,11 @@ body.mode-search .control .btn {
 .example_code pre code {
     white-space: pre;
 }
+
+.common-article-tag-page {
+    padding-top: 4em;
+}
+
+.tag-cloud {
+    padding-top: 1em;
+}
