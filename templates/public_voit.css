@@ -29,7 +29,7 @@ a {
 
 container {
     display: block;
-    margin-top: 5em;
+    padding-top: 5em;
 }
 
 .persistent-header h0 a {
@@ -486,7 +486,7 @@ footer {
     margin-left: auto;
     margin-right: auto;
     position: relative;
-    margin-bottom: 20px;
+    /* margin-bottom: 20px; */
     margin-top: 5em;
     box-shadow: 0 8px 17px 0 rgba(0, 0, 0, 0.2);
 }
