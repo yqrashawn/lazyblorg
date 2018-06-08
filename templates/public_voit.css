@@ -2,8 +2,12 @@
  *  Generic stuff
  *  ------------------------------------------ */
 @import url('https://fonts.googleapis.com/css?family=Inconsolata');
+html {
+    min-height: 100%;
+}
 
 body {
+    height: 100%;
     background: #e8e8e1;
     color: #252525;
     font-family: 'Inconsolata', monospace;
