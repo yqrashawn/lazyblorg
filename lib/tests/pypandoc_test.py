@@ -108,7 +108,7 @@ comment
 <li><strong>bold</strong></li>
 <li><em>italic</em></li>
 <li><strong>underline</strong></li>
-<li><del>strike through</del></li>
+<li><s>strike through</s></li>
 <li><code>code</code></li>
 <li><p><code>commands</code></p></li>
 <li><p><a href="http://orgmode.org" class="uri">http://orgmode.org</a></p></li>

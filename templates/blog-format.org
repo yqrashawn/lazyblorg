@@ -880,23 +880,23 @@ A single page which is used as template for =example.com/tags/index.html=.
 
   #COMMON-SIDEBAR#
 
-  <article class="common-article">
+  <article class="common-article-tag-page">
 
-    <p>
+      <p>
 
-    <!-- Tag cloud of all tags except «<a href="hardware">hardware</a>» and «<a href="software">software</a>» which are my most general tags. -->
-    The bigger the tag, the more articles are tagged with it.
-    <!-- Tag Cloud: FIXXME: legend explaining size and colour -->
+      <!-- Tag cloud of all tags except «<a href="hardware">hardware</a>» and «<a href="software">software</a>» which are my most general tags. -->
+      The bigger the tag, the more articles are tagged with it.
+      <!-- Tag Cloud: FIXXME: legend explaining size and colour -->
 
-    </p>
+      </p>
 
-	  <aside class="tag-cloud">
-	    <ul>
+      <aside class="tag-cloud">
+        <ul>
 
-#TAGOVERVIEW-CLOUD#
+  #TAGOVERVIEW-CLOUD#
 
-            </ul>
-          </aside>
+        </ul>
+      </aside>
 
   </article>
 
