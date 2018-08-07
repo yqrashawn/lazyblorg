@@ -2,8 +2,13 @@
  *  Generic stuff
  *  ------------------------------------------ */
 @import url('https://fonts.googleapis.com/css?family=Inconsolata');
+html {
+    min-height: 100%;
+    height: auto;
+}
 
 body {
+    height: 100%;
     background: #e8e8e1;
     color: #252525;
     font-family: 'Inconsolata', monospace;
@@ -29,7 +34,7 @@ a {
 
 container {
     display: block;
-    margin-top: 5em;
+    padding-top: 5em;
 }
 
 .persistent-header h0 a {
@@ -486,7 +491,7 @@ footer {
     margin-left: auto;
     margin-right: auto;
     position: relative;
-    margin-bottom: 20px;
+    /* margin-bottom: 20px; */
     margin-top: 5em;
     box-shadow: 0 8px 17px 0 rgba(0, 0, 0, 0.2);
 }
