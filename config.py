@@ -43,7 +43,8 @@ BLOG_LOGO = BASE_URL + '/public/img/YQ_logo.png'
 DISQUS_NAME = 'yqrashawn'  # gets placed in: '//publicvoit.disqus.com/embed.js'
 
 ## string: Email address to send comments to:
-COMMENT_EMAIL_ADDRESS = 'namy.19@gmail.com'
+# COMMENT_EMAIL_ADDRESS = 'namy.19@gmail.com'
+COMMENT_EMAIL_ADDRESS = 'hi@yqrashawn.com'
 
 ## integer: Show this many article teasers on entry page
 NUMBER_OF_TEASER_ARTICLES = 25
