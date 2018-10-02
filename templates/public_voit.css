@@ -22,6 +22,10 @@ body {
     margin: 0px;
 }
 
+code {
+    background-color: #f2f2f2;
+}
+
 a {
     text-decoration: none;
     color: #990000;
@@ -304,6 +308,10 @@ container {
     margin-bottom: 20px;
 }
 
+.temporal-article-header-nav {
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,.2)
+}
+
 .common-orgsource {
     float: right;
     font-size: 120%;
@@ -435,6 +443,7 @@ container {
     padding-top: 4em;
     margin-left: 20%;
     margin-right: 20%;
+    text-align: center;
 }
 
 .breadcrumbs {
