@@ -2,6 +2,7 @@
  *  Generic stuff
  *  ------------------------------------------ */
 @import url('https://fonts.googleapis.com/css?family=Inconsolata');
+
 html {
     min-height: 100%;
     height: auto;
@@ -449,8 +450,20 @@ blockquote br {
 }
 
 .image-center {
+    margin: auto;
     text-align: center;
     width: 100%;
+}
+
+figure {
+    margin-block-start: none;
+    margin-block-end: none;
+    margin-inline-start: none;
+    margin-inline-end: none;
+}
+
+figure img {
+    max-width: 100%;
 }
 
 figcaption {
