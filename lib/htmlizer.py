@@ -1,5 +1,5 @@
 # -*- coding: utf-8; mode: python; -*-
-# Time-stamp: <2017-10-29 13:00:09 vk>
+# Time-stamp: <2018-12-17 14:05:10 karl.voit>
 
 import config  # lazyblorg-global settings
 import sys
@@ -16,17 +16,17 @@ import cv2  # for scaling image files to their width of choice
 try:
     from werkzeug.utils import secure_filename  # for sanitizing path components
 except ImportError:
-    print "Could not find Python module \"werkzeug\".\nPlease install it, e.g., with \"sudo pip install werkzeug\"."
+    print("Could not find Python module \"werkzeug\".\nPlease install it, e.g., with \"sudo pip install werkzeug\".")
     sys.exit(1)
 
 try:
     import pypandoc
 except ImportError:
-    print "Could not find Python module \"pypandoc\".\nPlease install it, e.g., with \"sudo pip install pypandoc\"."
+    print("Could not find Python module \"pypandoc\".\nPlease install it, e.g., with \"sudo pip install pypandoc\".")
     sys.exit(1)
 
-reload(sys)
-sys.setdefaultencoding("utf-8")  # for handling UTF-8 characters in filenames like: [x for x in self.filename_dict.keys() if x.startswith(timestamp)]
+# reload(sys)
+# sys.setdefaultencoding("utf-8")  # for handling UTF-8 characters in filenames like: [x for x in self.filename_dict.keys() if x.startswith(timestamp)]
 
 # NOTE: pdb hides private variables as well. Please use:
 # data = self._OrgParser__entry_data ; data['content']
@@ -39,7 +39,7 @@ class HtmlizerException(Exception):
 
     def __init__(self, entry_id, value):
         if entry_id:
-            self.value = u'Entry ' + entry_id + u' - ' + value
+            self.value = 'Entry ' + entry_id + ' - ' + value
         else:
             self.value = value
 
@@ -69,6 +69,8 @@ class Htmlizer(object):
     ignore_missing_ids = False  # boolean; do not throw respective exception when true
     filename_dict = {}  # dict of basenames of filenames, see config.MEMACS_FILE_WITH_IMAGE_FILE_INDEX and config.DIRECTORIES_WITH_IMAGE_ORIGINALS
     stats_images_resized = 0  # holds the current number of resized image files
+    stats_external_org_to_html5_conversion = 0  # holds the number of invocations of external conversion tool (pypandoc so far)
+    stats_external_latex_to_html5_conversion = 0  # holds the number of invocations of external conversion tool (pypandoc so far)
 
     # { 'mytag': [ 'ID1', 'ID2', 'ID2'], 'anothertag': [...] }
     dict_of_tags_with_ids = None
@@ -83,32 +85,35 @@ class Htmlizer(object):
 
     # find external links such as [[http(s)://foo.com][bar]]:
     EXT_URL_WITH_DESCRIPTION_REGEX = re.compile(
-        u'\[\[(http[^ ]+?)\]\[(.+?)\]\]', flags=re.U)
+        '\[\[(http[^ ]+?)\]\[(.+?)\]\]', flags=re.U)
 
     # find external links such as [[foo]]:
     EXT_URL_WITHOUT_DESCRIPTION_REGEX = re.compile(
-        u'\[\[(.+?)\]\]', flags=re.U)
+        '\[\[(.+?)\]\]', flags=re.U)
 
     # find external links such as http(s)://foo.bar
     EXT_URL_LINK_REGEX = re.compile(
-        u'([^"<>\[])(http(s)?:\/\/\S+)', flags=re.U)
+        '([^"<>\[])(http(s)?:\/\/\S+)', flags=re.U)
 
     # find '&amp;' in an active URL and fix it to '&':
     FIX_AMPERSAND_URL_REGEX = re.compile(
-        u'(href="http(s)?://\S+?)&amp;(\S+?")', flags=re.U)
+        '(href="http(s)?://\S+?)&amp;(\S+?")', flags=re.U)
 
     # find *bold text*:
     # test with: re.subn(re.compile(u'(\W|\A)\*([^*]+)\*(\W|\Z)', flags=re.U), ur'\1<b>\2</b>\3', '*This* is a *touch* of *bold*.')[0]
-    BOLD_REGEX = re.compile(u'(\W|\A)\*([^*]+)\*(\W|\Z)', flags=re.U)
+    BOLD_REGEX = re.compile('(\W|\A)\*([^*]+?)\*(\W|\Z)', flags=re.U)
 
     # find ~code or source text~ (teletype):
-    CODE_REGEX = re.compile(u'(\W|\A)~([^~]+)~(\W|\Z)', flags=re.U)
+    CODE_REGEX = re.compile('(\W|\A)~([^~]+?)~(\W|\Z)', flags=re.U)
 
     # find +strike through text+ (teletype):
     STRIKE_THROUGH_REGEX = re.compile(u'(\W|\A)\+([^~]+)\+(\W|\Z)', flags=re.U)
 
     # find =verbatim text= (teletype):
-    VERBATIM_REGEX = re.compile(u'(\W|\A)=([^=]+)=(\W|\Z)', flags=re.U)
+    VERBATIM_REGEX = re.compile('(\W|\A)=([^=]+?)=(\W|\Z)', flags=re.U)
+
+    # find +strike through+ text:
+    STRIKE_THROUGH_REGEX = re.compile('(\W|\A)\+([^~]+?)\+(\W|\Z)', flags=re.U)
 
     # any ISO date-stamp of format YYYY-MM-DD:
     DATESTAMP = '([12]\d\d\d)-([012345]\d)-([012345]\d)'
@@ -122,7 +127,6 @@ class Htmlizer(object):
     LINKS_ONLY_FEED_POSTFIX = ".atom_1.0.links-only.xml"
     LINKS_AND_TEASER_FEED_POSTFIX = ".atom_1.0.links-and-teaser.xml"
     LINKS_AND_CONTENT_FEED_POSTFIX = ".atom_1.0.links-and-content.xml"
-
 
     def __init__(
             self,
@@ -174,10 +178,10 @@ class Htmlizer(object):
         """
         Basic method that creates all the output.
 
-        @param: return: stats_generated_total: total articles generated
-        @param: return: stats_generated_temporal: temporal articles generated
-        @param: return: stats_generated_persistent: persistent articles generated
-        @param: return: stats_generated_tags: tag articles generated
+        @param: return: list of: stats_generated_total: total articles generated
+                                 stats_generated_temporal: temporal articles generated
+                                 stats_generated_persistent: persistent articles generated
+                                 stats_generated_tags: tag articles generated
         """
 
         self.blog_data = self._populate_backreferences(self.blog_data)
@@ -185,21 +189,26 @@ class Htmlizer(object):
         self.dict_of_tags_with_ids = self._populate_dict_of_tags_with_ids(
             self.blog_data)
 
-        entry_list_by_newest_timestamp, stats_generated_total, stats_generated_temporal, \
-            stats_generated_persistent, stats_generated_tags = self._generate_pages_for_tags_persistent_temporal()
-
         dummy_age = 0  # FIXXME: replace with age in days since last usage
         # tags = list of lists with [tagname, count of tag usage, age in days of last usage]:
-        tags = [[tag, len(self.dict_of_tags_with_ids[tag]), dummy_age] for tag in self.dict_of_tags_with_ids.keys()]
+        tags = [[tag, len(self.dict_of_tags_with_ids[tag]), dummy_age] for tag in list(self.dict_of_tags_with_ids.keys())]
+
+        entry_list_by_newest_timestamp, stats_generated_total, stats_generated_temporal, \
+            stats_generated_persistent, stats_generated_tags = self._generate_pages_for_tags_persistent_temporal(tags)
+
         self._generate_tag_overview_page(tags)
 
         self._generate_feeds(entry_list_by_newest_timestamp)
 
-        return stats_generated_total, \
-            stats_generated_temporal, \
-            stats_generated_persistent, \
-            stats_generated_tags, \
-            self.stats_images_resized
+        return [stats_generated_total,
+                stats_generated_temporal,
+                stats_generated_persistent,
+                stats_generated_tags,
+                self.stats_images_resized,
+                self.stats_external_org_to_html5_conversion,
+                self.stats_external_latex_to_html5_conversion]
+
+    stats_external_latex_to_html5_conversion = 0  # holds the number of invocations of external conversion tool (pypandoc so far)
 
     def _populate_backreferences(self, blog_data):
         """
@@ -264,7 +273,7 @@ class Htmlizer(object):
                 for current_link_id in link_targets:
                     for blog_data_entry in blog_data:
                         if blog_data_entry['id'] == current_link_id:
-                            if 'back-references' in blog_data_entry.keys():
+                            if 'back-references' in list(blog_data_entry.keys()):
                                 blog_data_entry['back-references'].add(backreference_target)
                             else:
                                 # the first back-reference of this blog_data_entry
@@ -287,7 +296,7 @@ class Htmlizer(object):
             if config.TAG_FOR_HIDDEN not in blog_article['usertags']:
                 for usertag in blog_article['usertags']:
                     # append usertags to dict:
-                    if usertag in dict_of_tags_with_ids.keys():
+                    if usertag in list(dict_of_tags_with_ids.keys()):
                         dict_of_tags_with_ids[usertag].append(
                             blog_article['id'])
                     else:
@@ -297,10 +306,11 @@ class Htmlizer(object):
 
         return dict_of_tags_with_ids
 
-    def _generate_pages_for_tags_persistent_temporal(self):
+    def _generate_pages_for_tags_persistent_temporal(self, tags):
         """
         Method that creates the pages for tag-pages, persistent pages, and temporal pages.
 
+        @param: tags: dict of the form TAGS = [['python', 28059, 3], [tagname, count, age_in_days]]
         @param: return: stats_generated_total: total articles generated
         @param: return: stats_generated_temporal: temporal articles generated
         @param: return: stats_generated_persistent: persistent articles generated
@@ -372,7 +382,7 @@ class Htmlizer(object):
         stats_generated_tags += stats_generated_empty_tags
 
         entry_list_by_newest_timestamp = self.generate_entry_list_by_newest_timestamp()
-        self.generate_entry_page(entry_list_by_newest_timestamp)
+        self.generate_entry_page(entry_list_by_newest_timestamp, tags)
         stats_generated_total += 1
 
         return entry_list_by_newest_timestamp, stats_generated_total, stats_generated_temporal, \
@@ -393,9 +403,9 @@ class Htmlizer(object):
         self.list_of_tag_pages_generated.append(tag)
 
         orgfilename, htmlfilename = self._create_path_and_generate_filenames_and_copy_images(entry)
-        htmlcontent = u''
+        htmlcontent = ''
 
-        content = u''
+        content = ''
         for articlepart in [
             'tagpage-header',
             'tagpage-header-begin',
@@ -405,15 +415,15 @@ class Htmlizer(object):
             entry, content)
 
         # handle autotags:
-        content = u''
-        if 'autotags' in entry.keys():
-            for autotag in entry['autotags'].keys():
-                content += self._replace_tag_placeholders([autotag + ":" + entry['autotags'][autotag]],
+        content = ''
+        if 'autotags' in list(entry.keys()):
+            for autotagkey in sorted(list(entry['autotags'].keys())):
+                content += self._replace_tag_placeholders([autotagkey + ":" + entry['autotags'][autotagkey]],
                                                           self.template_definition_by_name('article-autotag'))
         htmlcontent += self._replace_general_article_placeholders(
             entry, content)
 
-        content = u''
+        content = ''
         for articlepart in ['tagpage-tags-end', 'tagpage-header-end']:
             content += self.template_definition_by_name(articlepart)
         htmlcontent += self._replace_general_article_placeholders(
@@ -421,7 +431,7 @@ class Htmlizer(object):
 
         htmlcontent += self.__collect_raw_content(entry['content'])
 
-        content = u''
+        content = ''
         content += self.template_definition_by_name('tagpage-end')
 
         content += self._generate_back_references_content(entry, config.TEMPORAL)
@@ -458,11 +468,11 @@ class Htmlizer(object):
                  config.TAG_FOR_TEMPLATES_ENTRY,
                  config.TAG_FOR_HIDDEN])
 
-        entry = {'content': u'',
+        entry = {'content': '',
                  'category': config.TAGS,
-                 'finished-timestamp-history': [datetime(2017,1,1,0,0)],  # use hard-coded date to prevent unnecessary updates
-                 'firstpublishTS': datetime(2017,1,1,0,0),  # use hard-coded date to prevent unnecessary updates
-                 'latestupdateTS': datetime(2017,1,1,0,0),  # use hard-coded date to prevent unnecessary updates
+                 'finished-timestamp-history': [datetime(2017, 1, 1, 0, 0)],  # use hard-coded date to prevent unnecessary updates
+                 'firstpublishTS': datetime(2017, 1, 1, 0, 0),  # use hard-coded date to prevent unnecessary updates
+                 'latestupdateTS': datetime(2017, 1, 1, 0, 0),  # use hard-coded date to prevent unnecessary updates
                  'type': 'this is an entry stub for an empty tag page'
                  }
 
@@ -542,7 +552,7 @@ class Htmlizer(object):
         @param return: a string containing all feed-related meta-data
         """
 
-        feed = u"""<?xml version='1.0' encoding='UTF-8'?>
+        feed = """<?xml version='1.0' encoding='UTF-8'?>
 <feed xmlns="http://www.w3.org/2005/Atom"
       xmlns:thr="http://purl.org/syndication/thread/1.0"
       xml:lang="en-us">
@@ -607,7 +617,7 @@ class Htmlizer(object):
                 continue
 
             # filling feed entry string:
-            feedentry = u"""\n<!-- ############################################################################################# -->\n<entry>
+            feedentry = """\n<!-- ############################################################################################# -->\n<entry>
     <title type="text">""" + self.sanitize_feed_html_characters(blog_data_entry['title']) + """</title>
     <link href='""" + config.BASE_URL + "/" + listentry['url'] + """' />
     <published>""" + blog_data_entry['firstpublishTS'].strftime('%Y-%m-%dT%H:%M:%S' + config.TIME_ZONE_ADDON) + """</published>
@@ -619,15 +629,15 @@ class Htmlizer(object):
                 feedentry += "\n    <category scheme='" + config.BASE_URL + \
                     "/" + "tags" + "/" + tag + "' term='" + tag + "' />"
             # handle autotags:
-            if 'autotags' in blog_data_entry.keys():
-                for autotag in blog_data_entry['autotags'].keys():
+            if 'autotags' in list(blog_data_entry.keys()):
+                for autotag in list(blog_data_entry['autotags'].keys()):
                     tag = autotag + ":" + blog_data_entry['autotags'][autotag]
                     feedentry += "\n    <category scheme='" + config.BASE_URL + "/" + \
                         "autotags" + "/" + autotag + "' term='" + tag + "' />"
 
             # write feedentry to links_atom_feed before any summary is added:
             links_atom_feed += feedentry + "\n    <id>" + config.BASE_URL + "/" + \
-                listentry['url'] + u"-from-feed-with-links" + "</id>\n</entry>"
+                listentry['url'] + "-from-feed-with-links" + "</id>\n</entry>"
 
             # add article summary to feedentry:
             feedentry += "\n    <summary type='xhtml'>\n<div xmlns='http://www.w3.org/1999/xhtml'>"
@@ -647,13 +657,13 @@ class Htmlizer(object):
 
             # add content to content-feed OR end entry for links-feed:
             teaser_atom_feed += feedentry + "\n    <id>" + config.BASE_URL + "/" + \
-                listentry['url'] + u"-from-feed-with-teaser" + "</id>\n</entry>"
+                listentry['url'] + "-from-feed-with-teaser" + "</id>\n</entry>"
             content_atom_feed += feedentry + """    <content type='xhtml'>
       <div xmlns='http://www.w3.org/1999/xhtml'>
 	""" + self.sanitize_feed_html_characters('\n'.join(blog_data_entry['content'])) + """
       </div>
     </content>
-    <id>""" + config.BASE_URL + "/" + listentry['url'] + u"-from-feed-with-content" + \
+    <id>""" + config.BASE_URL + "/" + listentry['url'] + "-from-feed-with-content" + \
                 "</id>\n</entry>"
 
             # replace "\\example.com" with "http:\\example.com" to calm down feed verifiers/aggregators:
@@ -670,9 +680,9 @@ class Htmlizer(object):
         teaser_atom_feed += "</feed>"
         content_atom_feed += "</feed>"
 
-        assert(isinstance(links_atom_feed, unicode))
-        assert(isinstance(teaser_atom_feed, unicode))
-        assert(isinstance(content_atom_feed, unicode))
+        assert(isinstance(links_atom_feed, str))
+        assert(isinstance(teaser_atom_feed, str))
+        assert(isinstance(content_atom_feed, str))
 
         # Save the feed to a file in various formats
         self.write_content_to_file(atom_targetfile_links, links_atom_feed)
@@ -706,23 +716,24 @@ class Htmlizer(object):
                 # FIXXME: find out how those entries got into blog_data multiple times in the first place:
                 # I guess this has something to do with using self.ID_PREFIX_FOR_EMPTY_TAG_PAGES
                 pass
-                #logging.warning('Trying to add an entry twice: ' + str(entry_to_add))
+                # logging.warning('Trying to add an entry twice: ' + str(entry_to_add))
 
         return sorted(
             entrylist,
             key=lambda entry: entry['latestupdateTS'],
             reverse=True)
 
-    def generate_entry_page(self, entry_list_by_newest_timestamp):
+    def generate_entry_page(self, entry_list_by_newest_timestamp, tags):
         """
         Generates and writes the blog entry page with sneak previews of the most recent articles/updates.
 
+        @param: tags: dict of the form TAGS = [['python', 28059, 3], [tagname, count, age_in_days]]
         @param: entry_list_by_newest_timestamp: a sorted list like [ {'id':'a-new-entry', 'latestupdateTS':datetime(), 'url'="<URL>"}, {...}]
         """
 
         entry_page_filename = os.path.join(self.targetdir, "index.html")
 
-        htmlcontent = u'' + \
+        htmlcontent = '' + \
             self.template_definition_by_name('entrypage-header')
 
         listentry = None
@@ -754,7 +765,7 @@ class Htmlizer(object):
             if entry['category'] == 'TEMPORAL' or entry[
                     'category'] == 'PERSISTENT':
 
-                content = u""
+                content = ""
 
                 for articlepart in [
                     'article-preview-header',
@@ -766,8 +777,8 @@ class Htmlizer(object):
                     entry['usertags'], self.template_definition_by_name('article-preview-usertag'))
 
                 # handle autotags
-                if 'autotags' in entry.keys():
-                    for autotag in entry['autotags'].keys():
+                if 'autotags' in list(entry.keys()):
+                    for autotag in list(entry['autotags'].keys()):
                         content += self._replace_tag_placeholders([autotag + ":" + entry['autotags'][autotag]],
                                                                   self.template_definition_by_name('article-preview-autotag'))
 
@@ -776,7 +787,7 @@ class Htmlizer(object):
                         'article-preview-begin']:
                     content += self.template_definition_by_name(articlepart)
 
-                assert('htmlteaser-equals-content' in entry.keys())
+                assert('htmlteaser-equals-content' in list(entry.keys()))
 
                 if not entry['htmlteaser-equals-content']:
                     # there is more in the article than in the teaser alone:
@@ -854,6 +865,10 @@ class Htmlizer(object):
         htmlcontent = self._replace_general_article_placeholders(
             entry, htmlcontent)
 
+        htmlcontent = htmlcontent.replace(
+            '#TAGOVERVIEW-CLOUD#',
+            self._generate_tag_cloud(tags))
+
         htmlcontent = self.sanitize_internal_links(
             config.ENTRYPAGE, htmlcontent)
         self.write_content_to_file(entry_page_filename, htmlcontent)
@@ -874,11 +889,11 @@ class Htmlizer(object):
         # adding article paths to embedded images:
         element_index = 0
         for element in content:
-            if element.startswith(u'\n<figure class="'):
+            if element.startswith('\n<figure class="'):
                 content[element_index] = content[element_index].replace('">\n<img src="',
-                                                                                      '">\n<img src="http:' +
-                                                                                      config.BASE_URL + '/' +
-                                                                                      url + '/')
+                                                                        '">\n<img src="http:' +
+                                                                        config.BASE_URL + '/' +
+                                                                        url + '/')
             element_index += 1
         return content
 
@@ -890,7 +905,7 @@ class Htmlizer(object):
         @param: return: string with linked tag cloud of form: <a href="cloud/" class="usertag tagcloud-size-0 tagcloud-age-2">cloud</a>
         """
 
-        result = u''
+        result = ''
 
         # removing tags that should be ignored due to user configuration:
         for tagitem in tags:
@@ -898,7 +913,7 @@ class Htmlizer(object):
                 tags.remove(tagitem)
 
         # defines the number of steps of different sizes according to tag usage in numbers:
-        COUNT_SIZES = range(1, 7)  # requires 0..6 size-X definitions in CSS
+        COUNT_SIZES = list(range(1, 7))  # requires 0..6 size-X definitions in CSS
 
         COUNT_MAX = max([x[1] for x in tags])  # Needed to calculate the steps for the font-size
         if len(tags) < len(COUNT_SIZES):
@@ -918,7 +933,7 @@ class Htmlizer(object):
             count = currenttag[1]
             age = currenttag[2]
 
-            css_size = count / COUNT_STEP
+            css_size = int(count / COUNT_STEP)
 
             css_age = 0
             for age_range in AGE_RANGES:
@@ -926,7 +941,7 @@ class Htmlizer(object):
                     break
                 css_age += 1
 
-            result += '<li><a href="' + tag + '/" class="tagcloud-usertag tagcloud-size-' + \
+            result += '<li><a href="' + config.BASE_URL + '/tags/' + tag + '/" class="tagcloud-usertag tagcloud-size-' + \
                       str(css_size) + ' tagcloud-age-' + str(css_age) + '">' + tag + '</a></li>\n'
 
         return result
@@ -940,7 +955,7 @@ class Htmlizer(object):
 
         tag_overview_filename = os.path.join(self.targetdir, 'tags', 'index.html')
 
-        htmlcontent = u''
+        htmlcontent = ''
         for articlepart in [
                 'tagoverviewpage-header',
                 'tagoverviewpage-body',
@@ -978,16 +993,16 @@ class Htmlizer(object):
                     output.write(content)
                 except:
                     self.logging.critical(self.current_entry_id_str() +
-                        "Error when writing file: " + str(filename))
+                                          "Error when writing file: " + str(filename))
                     raise
                     return False
             return True
         else:
             self.logging.critical(self.current_entry_id_str() +
-                "No filename (" +
-                str(filename) +
-                ") or content when writing file: " +
-                str(filename))
+                                  "No filename (" +
+                                  str(filename) +
+                                  ") or content when writing file: " +
+                                  str(filename))
             return False
 
     def write_orgcontent_to_file(self, orgfilename, rawcontent):
@@ -1005,16 +1020,40 @@ class Htmlizer(object):
                     output.write(rawcontent)
                 except:
                     self.logging.critical(self.current_entry_id_str() +
-                        "Error when writing file: " + str(orgfilename))
+                                          "Error when writing file: " + str(orgfilename))
                     raise
             return True
         else:
             self.logging.critical(self.current_entry_id_str() +
-                "No filename (" +
-                str(orgfilename) +
-                ") or Org-mode raw content when writing file: " +
-                str(orgfilename))
+                                  "No filename (" +
+                                  str(orgfilename) +
+                                  ") or Org-mode raw content when writing file: " +
+                                  str(orgfilename))
             return False
+
+    def convert_org_to_html5(self, orgmode):
+        """Converts an arbitrary Org mode syntax element (a string) to its
+        corresponding HTML5 representation.
+
+        @param orgmode: Org mode text
+        @param return: HTML5 representation of Org mode text
+        """
+
+        assert(isinstance(orgmode, str))
+        self.stats_external_org_to_html5_conversion += 1
+        return pypandoc.convert_text(orgmode, 'html5', format='org')
+
+    def convert_latex_to_html5(self, latex):
+        """Converts an arbitrary LaTeX syntax element (a string) to its
+        corresponding HTML5 representation.
+
+        @param latex: LaTeX text
+        @param return: HTML5 representation of Org mode text
+        """
+
+        assert(isinstance(latex, str))
+        self.stats_external_latex_to_html5_conversion += 1
+        return pypandoc.convert_text(latex, 'html5', format='latex')
 
     def sanitize_and_htmlize_blog_content(self, entry):
         """
@@ -1041,7 +1080,7 @@ class Htmlizer(object):
 
             # initialize result with default error message for unknown entry
             # elements:
-            result = u'<strong>lazyblorg: Sorry, content element "' + str(entry['content'][index][0]) + \
+            result = '<strong>lazyblorg: Sorry, content element "' + str(entry['content'][index][0]) + \
                 '" is not supported by htmlizer.py/sanitize_and_htmlize_blog_content() yet. ' + \
                 'Raw content follows:</strong><br />\n<PRE>' + \
                 repr(entry['content'][index][1:]) + '</PRE><br /><strong>lazyblorg: raw output end.</strong>'
@@ -1053,7 +1092,7 @@ class Htmlizer(object):
 
                 # join all lines of a paragraph to one single long
                 # line in order to enable sanitizing URLs and such:
-                result = u' '.join(entry['content'][index][1:])
+                result = ' '.join(entry['content'][index][1:])
 
                 result = self.sanitize_html_characters(result)
                 result = self.sanitize_internal_links(
@@ -1134,7 +1173,7 @@ class Htmlizer(object):
                     # html-source-code-example
                     result = self.template_definition_by_name('html-begin')
                     result = result.replace(
-                        '#NAME#', entry['content'][index][1] + u'<br />:')
+                        '#NAME#', entry['content'][index][1] + '<br />:')
                     result += self.sanitize_html_characters(
                         '\n'.join(
                             entry['content'][index][2])).replace(
@@ -1197,13 +1236,13 @@ class Htmlizer(object):
                 # occur within
 
                 result = self.template_definition_by_name('blockquote-begin')
-                mycontent = u'\n'.join(entry['content'][index][2])
+                mycontent = '\n'.join(entry['content'][index][2])
                 result += self.htmlize_simple_text_formatting(
                     self.sanitize_external_links(
                         self.sanitize_html_characters(mycontent)))
                 result = self.sanitize_internal_links(
                     entry['category'], result).replace(
-                    u'\n\n', u'<br />\n')
+                    '\n\n', '<br />\n')
                 result += self.template_definition_by_name('blockquote-end')
 
             elif entry['content'][index][0] == 'src-block':
@@ -1247,8 +1286,7 @@ class Htmlizer(object):
                             entry['category'],
                             tablerow,
                             keep_orgmode_format=True))
-                result = pypandoc.convert('\n'.join(sanitized_lines),
-                                          'html5', format='org')
+                result = self.convert_org_to_html5('\n'.join(sanitized_lines))
 
             elif entry['content'][index][0] == 'cust_link_image':
                 # ['cust_link_image',
@@ -1259,18 +1297,32 @@ class Htmlizer(object):
                 # ]    -> attr_html attributes (dict)
 
                 filename = self.locate_cust_link_image(entry['content'][index][1])
+
+                # check if filename is the original one or was replaced by a similar one:
                 if filename != entry['content'][index][1]:
                     # write back new filename if an alternative filename was derived:
                     logging.info('filename ' + filename + ' is an alternative to ' + entry['content'][index][1])
                     entry['content'][index][1] = filename
 
+                # issue a warning if
+                # WARN_IF_IMAGE_FILE_NOT_TAGGED_WITH is non-empty and
+                # the tag is not found in the filename
+                if config.WARN_IF_IMAGE_FILE_NOT_TAGGED_WITH and \
+                   len(config.WARN_IF_IMAGE_FILE_NOT_TAGGED_WITH) > 0 and \
+                   not Utils.contains_tag(filename, config.WARN_IF_IMAGE_FILE_NOT_TAGGED_WITH):
+                    self.logging.warning('WARN_IF_IMAGE_FILE_NOT_TAGGED_WITH("' +
+                                         config.WARN_IF_IMAGE_FILE_NOT_TAGGED_WITH + '"): filename "' + filename +
+                                         '" of entry [[id:' + entry['id'] + ']] does not contain the tag')
+
                 description = entry['content'][index][2]
                 caption = entry['content'][index][3]
                 attributes = entry['content'][index][4]
 
+                # start building the result string
                 result = '\n' + '<figure'
 
-                if 'align' in attributes.keys():
+                # apply alignment things
+                if 'align' in list(attributes.keys()):
                     if attributes['align'].lower() in ['left', 'right', 'float-left', 'float-right', 'center']:
                         result += ' class="image-' + attributes['align'].lower() + '"'
                     else:
@@ -1279,28 +1331,35 @@ class Htmlizer(object):
                     # if no alignment is given, use center:
                     result += ' class="image-center"'
 
+                # get scaled image filename
                 result += '>\n<img src="' + self.get_scaled_filename(filename, attributes).replace(' ', '%20') + '" '
 
                 # FIXXME: currently, all other attributes are ignored:
-                if 'alt' in attributes.keys():
+                if 'alt' in list(attributes.keys()):
                     result += 'alt="' + attributes['alt'] + '" '
                 else:
                     result += 'alt="" '  # alt tag must not be omitted in HTML5 (except when using figcaption, where it is optional)
-                if 'width' in attributes.keys():
+                if 'width' in list(attributes.keys()):
                     result += 'width="' + attributes['width'] + '" '
 
                 result += '/>'
 
+                # determine, if a caption (of a description) is necessary:
                 if description == filename:
                     # If filename equals description, omit it because it does not make sense to me:
                     description = None
                 if description and caption:
+                    # We've got both: a description and a caption. I'm
+                    # deciding to use the description in those cases
+                    # and issue a warning:
                     self.logging.warning(self.current_entry_id_str() + 'a customized image had description *and* caption. I used the caption: [' +
                                          repr(entry['content'][index][1:]) + ']')
                     description = caption
                 elif caption:
+                    # a caption always results in a caption of course
                     description = caption
                 if description:
+                    # generate the figcaption
                     result += '\n<figcaption>' + description + '</figcaption>'
 
                 result += '\n</figure>\n'
@@ -1310,7 +1369,7 @@ class Htmlizer(object):
                 # Example:
                 # entry['attachments'] => [['cust_link_image', u'2017-03-11T18.29.20 Sterne im Baum -- mytag.jpg', {}],
                 #                          ['cust_link_image', u'2017-03-11T18.29.20 Sterne im Baum with attributes -- mytag.jpg', {u'width': u'300', u'alt': u'Stars in a Tree', u'align': u'right', u'title': u'Some Stars'}]]
-                if 'attachments' in entry.keys():
+                if 'attachments' in list(entry.keys()):
                     entry['attachments'].append(['cust_link_image', filename, attributes])
                 else:
                     entry['attachments'] = [['cust_link_image', filename, attributes]]
@@ -1348,13 +1407,11 @@ class Htmlizer(object):
                             list_item,
                             keep_orgmode_format=True))
                 if entry['content'][index][0] == 'latex-block':
-                    result = pypandoc.convert(
-                        '\n'.join(sanitized_lines), 'html5', format='latex')
+                    result = self.convert_latex_to_html5('\n'.join(sanitized_lines))
                 else:
-                    result = pypandoc.convert(
-                        '\n'.join(sanitized_lines), 'html5', format='org')
+                    result = self.convert_org_to_html5('\n'.join(sanitized_lines))
                 if result == '\n':
-                    self.logging.warning(self.current_entry_id_str() + u'Block of type ' +
+                    self.logging.warning(self.current_entry_id_str() + 'Block of type ' +
                                          {str(entry['content'][index][0])} +
                                          ' could not converted into html5 via pypandoc (or it is empty): ' +
                                          '\n'.join(sanitized_lines))
@@ -1370,7 +1427,7 @@ class Htmlizer(object):
             entry['htmlteaser-equals-content'] = False
 
         if self.autotag_language:
-            if 'autotags' not in entry.keys():
+            if 'autotags' not in list(entry.keys()):
                 entry['autotags'] = {}
             autotag = Utils.guess_language_from_stopword_percentages(
                 [entry['rawcontent']])
@@ -1378,10 +1435,10 @@ class Htmlizer(object):
                 entry['autotags']['language'] = autotag
             else:
                 # language could not be determined clearly:
-                self.logging.warning(self.current_entry_id_str() + u"language of ID " +
+                self.logging.warning(self.current_entry_id_str() + "language of ID " +
                                      str(entry['id']) +
                                      " is not recognized clearly; using autotag \"unsure\"")
-                entry['autotags']['language'] = u'unsure'
+                entry['autotags']['language'] = 'unsure'
 
         return entry
 
@@ -1395,7 +1452,7 @@ class Htmlizer(object):
         @param returns: a string of a file-name (basename) that holds the scaled value or the original name if no width attribute is found
         """
 
-        if 'width' in attributes.keys():
+        if 'width' in list(attributes.keys()):
             width = attributes['width']
             (basename, extension) = os.path.splitext(filename)
             return basename + ' - scaled width ' + width + extension
@@ -1421,7 +1478,7 @@ class Htmlizer(object):
         @param return: fixed string
         """
 
-        result = re.sub(self.FIX_AMPERSAND_URL_REGEX, ur'\1&\3', content)
+        result = re.sub(self.FIX_AMPERSAND_URL_REGEX, r'\1&\3', content)
         if result != content:
             self.logging.debug(self.current_entry_id_str() +
                                'fix_ampersands_in_url: fixed \"' + content +
@@ -1440,15 +1497,14 @@ class Htmlizer(object):
 
         """
 
-        assert(isinstance(content, unicode))
+        assert(isinstance(content, str))
 
-        content = re.subn(self.BOLD_REGEX, ur'\1<b>\2</b>\3', content)[0]
-        content = re.subn(self.CODE_REGEX, ur'\1<code>\2</code>\3', content)[0]
-        content = re.subn(self.VERBATIM_REGEX, ur'\1<code>\2</code>\3', content)[0]
-        content = re.subn(self.STRIKE_THROUGH_REGEX, ur'\1<s>\2</s>\3', content)[0]
+        content = re.subn(self.BOLD_REGEX, r'\1<b>\2</b>\3', content)[0]
+        content = re.subn(self.CODE_REGEX, r'\1<code>\2</code>\3', content)[0]
+        content = re.subn(self.VERBATIM_REGEX, r'\1<code>\2</code>\3', content)[0]
+        content = re.subn(self.STRIKE_THROUGH_REGEX, r'\1<s>\2</s>\3', content)[0]
 
-
-        assert(isinstance(content, unicode))
+        assert(isinstance(content, str))
 
         return content
 
@@ -1468,14 +1524,14 @@ class Htmlizer(object):
         """
 
         return content.replace(
-            u'&',
-            u'&amp;').replace(
-            u'<',
-            u'&lt;').replace(
-            u'>',
-            u'&gt;').replace(
-            u'—',
-            u'&mdash;')
+            '&',
+            '&amp;').replace(
+            '<',
+            '&lt;').replace(
+            '>',
+            '&gt;').replace(
+            '—',
+            '&mdash;')
 
     def sanitize_feed_html_characters(self, content):
         """
@@ -1496,10 +1552,10 @@ class Htmlizer(object):
         """
 
         return content.replace(
-            u'<script async src=',
-            u'<script async="async" src=').replace(
-            u'&mdash;',
-            u'&#8212;')
+            '<script async src=',
+            '<script async="async" src=').replace(
+            '&mdash;',
+            '&#8212;')
 
     def generate_relative_url_from_sourcecategory_to_id(
             self, sourcecategory, targetid):
@@ -1512,21 +1568,21 @@ class Htmlizer(object):
         @param return: string with relative URL
         """
 
-        assert(isinstance(targetid, unicode) or isinstance(targetid, str))
+        assert(isinstance(targetid, str))
 
-        url = u""
+        url = ""
 
         # build back-traverse URL
         if sourcecategory == config.TEMPORAL:
-            url = u"../../../../"
+            url = "../../../../"
         elif sourcecategory == config.PERSISTENT:
-            url = u"../"
+            url = "../"
         elif sourcecategory == config.TAGOVERVIEWPAGE:
-            url = u"../"
+            url = "../"
         elif sourcecategory == config.TAGS:
-            url = u"../../"
+            url = "../../"
         elif sourcecategory == config.ENTRYPAGE:
-            url = u""
+            url = ""
         else:
             message = self.current_entry_id_str() + "generate_relative_url_from_sourcecategory_to_id() found an unknown sourcecategory [" + \
                       str(sourcecategory) + "]"
@@ -1534,7 +1590,7 @@ class Htmlizer(object):
             raise HtmlizerException(self.current_entry_id, message)
 
         url_for_the_target_id = self._target_path_for_id_without_targetdir(targetid)
-        if url_for_the_target_id == None:
+        if url_for_the_target_id is None:
             return False
         url += url_for_the_target_id
 
@@ -1554,7 +1610,7 @@ class Htmlizer(object):
         @param return: sanitized string (or False if the targetid could not be found)
         """
 
-        assert(type(content) in [unicode, str])
+        assert(type(content) == str)
 
         allmatches = re.findall(self.ID_SIMPLE_LINK_REGEX, content)
         if allmatches != []:
@@ -1567,7 +1623,7 @@ class Htmlizer(object):
                 targetid = currentmatch[1]
                 url = self.generate_relative_url_from_sourcecategory_to_id(
                     sourcecategory, targetid)
-                if type(url) not in [unicode, str]:
+                if type(url) != str:
                     return False
                 if keep_orgmode_format:
                     content = content.replace(
@@ -1584,7 +1640,7 @@ class Htmlizer(object):
                 description = currentmatch[2]
                 url = self.generate_relative_url_from_sourcecategory_to_id(
                     sourcecategory, targetid)
-                if type(url) not in [unicode, str]:
+                if type(url) != str:
                     return False
                 if keep_orgmode_format:
                     content = content.replace(
@@ -1609,17 +1665,17 @@ class Htmlizer(object):
 
         content = re.sub(
             self.EXT_URL_LINK_REGEX,
-            ur'\1<a href="\2">\2</a>',
+            r'\1<a href="\2">\2</a>',
             content)
 
         content = re.sub(
             self.EXT_URL_WITH_DESCRIPTION_REGEX,
-            ur'<a href="\1">\2</a>',
+            r'<a href="\1">\2</a>',
             content)
 
         content = re.sub(
             self.EXT_URL_WITHOUT_DESCRIPTION_REGEX,
-            ur'<a href="\1">\1</a>',
+            r'<a href="\1">\1</a>',
             content)
 
         return content
@@ -1636,7 +1692,7 @@ class Htmlizer(object):
 
         path = self._create_target_path_for_id_with_targetdir(entry['id'])
 
-        if 'attachments' in entry.keys():
+        if 'attachments' in list(entry.keys()):
             for attachment in entry['attachments']:
                 if attachment[0] == 'cust_link_image':
                     # ['cust_link_image', u'2017-03-11T18.29.20 Sterne im Baum with attributes -- mytag.jpg', {u'width': u'300', u'alt': u'Stars in a Tree', u'align': u'right', u'title': u'Some Stars'}]
@@ -1672,15 +1728,15 @@ class Htmlizer(object):
         number_of_back_references = 0
 
         # Adding back-references:
-        if 'back-references' in entry.keys():
+        if 'back-references' in list(entry.keys()):
             # FIXXME: other languages than german have to be added
             # here: (generalize using a configured list of known
             # languages?)
-            if 'autotags' in entry.keys():
-                if 'language' in entry['autotags'].keys() and entry['autotags']['language'] == 'deutsch':
+            if 'autotags' in list(entry.keys()):
+                if 'language' in list(entry['autotags'].keys()) and entry['autotags']['language'] == 'deutsch':
                     content += self.template_definition_by_name('backreference-header-de')
-            else:
-                content += self.template_definition_by_name('backreference-header-en')
+                else:
+                    content += self.template_definition_by_name('backreference-header-en')
 
             for back_reference_id in sorted(list(entry['back-references'])):
 
@@ -1690,11 +1746,11 @@ class Htmlizer(object):
                 back_reference_title_list = [x for x in self.blog_data if back_reference_id == x['id']]
 
                 # Ignore the (hard-coded) templates heading
-                if back_reference_title_list[0]['id'] != u'lazyblorg-templates':
+                if back_reference_title_list[0]['id'] != 'lazyblorg-templates':
 
                     # If we found exactly one entry with an existing title…
                     if len(back_reference_title_list) == 1 and \
-                       type(back_reference_title_list[0]['title']) == unicode:
+                       type(back_reference_title_list[0]['title']) == str:
 
                         # We re- or mis-use the sanitize function to
                         # translate the reference link to its HTML
@@ -1759,29 +1815,29 @@ class Htmlizer(object):
         """
 
         orgfilename, htmlfilename = self._create_path_and_generate_filenames_and_copy_images(entry)
-        htmlcontent = u''
+        htmlcontent = ''
 
-        content = u''
+        content = ''
         for articlepart in [
             'article-header',
             'article-header-begin',
                 'article-tags-begin']:
             content += self.template_definition_by_name(articlepart)
         content += self._replace_tag_placeholders(
-            entry['usertags'], self.template_definition_by_name('article-usertag'))
+            sorted(entry['usertags']), self.template_definition_by_name('article-usertag'))
         htmlcontent += self._replace_general_article_placeholders(
             entry, content)
 
         # handle autotags:
-        content = u''
-        if 'autotags' in entry.keys():
-            for autotag in entry['autotags'].keys():
-                content += self._replace_tag_placeholders([autotag + ":" + entry['autotags'][autotag]],
+        content = ''
+        if 'autotags' in list(entry.keys()):
+            for autotagkey in sorted(list(entry['autotags'].keys())):
+                content += self._replace_tag_placeholders([autotagkey + ":" + entry['autotags'][autotagkey]],
                                                           self.template_definition_by_name('article-autotag'))
         htmlcontent += self._replace_general_article_placeholders(
             entry, content)
 
-        content = u''
+        content = ''
         for articlepart in ['article-tags-end', 'article-header-end']:
             content += self.template_definition_by_name(articlepart)
         htmlcontent += self._replace_general_article_placeholders(
@@ -1789,7 +1845,7 @@ class Htmlizer(object):
 
         htmlcontent += self.__collect_raw_content(entry['content'])
 
-        content = u''
+        content = ''
         content += self.template_definition_by_name('article-end')
 
         content += self._generate_back_references_content(entry, config.TEMPORAL)
@@ -1813,9 +1869,9 @@ class Htmlizer(object):
         """
 
         orgfilename, htmlfilename = self._create_path_and_generate_filenames_and_copy_images(entry)
-        htmlcontent = u''
+        htmlcontent = ''
 
-        content = u''
+        content = ''
         for articlepart in [
             'persistent-header',
             'persistent-header-begin',
@@ -1823,20 +1879,20 @@ class Htmlizer(object):
             content += self.template_definition_by_name(articlepart)
         # htmlcontent = self.sanitize_internal_links(entry['category'], htmlcontent)
         content += self._replace_tag_placeholders(
-            entry['usertags'], self.template_definition_by_name('article-usertag'))
+            sorted(entry['usertags']), self.template_definition_by_name('article-usertag'))
         htmlcontent += self._replace_general_article_placeholders(
             entry, content)
 
         # handle autotags:
-        content = u''
-        if 'autotags' in entry.keys():
-            for autotag in entry['autotags'].keys():
-                content += self._replace_tag_placeholders([autotag + ":" + entry['autotags'][autotag]],
+        content = ''
+        if 'autotags' in list(entry.keys()):
+            for autotagkey in sorted(list(entry['autotags'].keys())):
+                content += self._replace_tag_placeholders([autotagkey + ":" + entry['autotags'][autotagkey]],
                                                           self.template_definition_by_name('article-autotag'))
         htmlcontent += self._replace_general_article_placeholders(
             entry, content)
 
-        content = u''
+        content = ''
         for articlepart in ['article-tags-end', 'persistent-header-end']:
             content += self.template_definition_by_name(articlepart)
         htmlcontent += self._replace_general_article_placeholders(
@@ -1844,7 +1900,7 @@ class Htmlizer(object):
 
         htmlcontent += self.__collect_raw_content(entry['content'])
 
-        content = u''
+        content = ''
         content += self.template_definition_by_name('persistent-end')
 
         content += self._generate_back_references_content(entry, config.PERSISTENT)
@@ -1866,14 +1922,10 @@ class Htmlizer(object):
         @param return: string with collected content strings in unicode
         """
 
-        htmlcontent = u''
+        htmlcontent = ''
 
         for element in contentarray:
-            if not isinstance(
-                    element,
-                    str) and not isinstance(
-                    element,
-                    unicode):
+            if not isinstance(element, str) and not isinstance(element, str):
                 message = self.current_entry_id_str() + "element in entry['content'] is of type \"" + str(type(element)) + \
                     "\" which can not be written: [" + repr(element) + "]. Please do fix it in " + \
                     "htmlizer.py/sanitize_and_htmlize_blog_content()"
@@ -1881,13 +1933,13 @@ class Htmlizer(object):
                 raise HtmlizerException(self.current_entry_id, message)
             else:
                 try:
-                    htmlcontent += unicode(element)
+                    htmlcontent += str(element)
                 except:
                     self.logging.critical(self.current_entry_id_str() +
-                        "Error in entry: Element type: " + str(type(element)))
+                                          "Error in entry: Element type: " + str(type(element)))
                     raise
 
-        assert(isinstance(htmlcontent, unicode))
+        assert(isinstance(htmlcontent, str))
         return htmlcontent
 
     def _replace_tag_placeholders(self, tags, template_string):
@@ -1903,7 +1955,7 @@ class Htmlizer(object):
         assert(isinstance(tags, list))
         assert(template_string)
 
-        result = u''
+        result = ''
 
         for tag in tags:
             result += template_string.replace('#TAGNAME#', tag)
@@ -1983,7 +2035,7 @@ class Htmlizer(object):
             'T' + hours + ':' + minutes
 
         content = content.replace('#ARTICLE-ID#', entry['id'])
-        content = content.replace('#ARTICLE-URL#', unicode(self._target_path_for_id_without_targetdir(entry['id'])))
+        content = content.replace('#ARTICLE-URL#', str(self._target_path_for_id_without_targetdir(entry['id'])))
         content = content.replace('#ARTICLE-YEAR#', year)
         content = content.replace('#ARTICLE-MONTH#', month)
         content = content.replace('#ARTICLE-DAY#', day)
@@ -2027,9 +2079,9 @@ class Htmlizer(object):
         # Example: top_tag_list == [(u'lazyblorg', 4), (u'programming', 3), (u'exampletag', 2),
         #                           (u'mytest', 1), (u'testtag1', 1)]
 
-        htmlcontent = u''
+        htmlcontent = ''
         for tag in top_tag_list:
-            htmlcontent += u'\n              <li><a class="usertag" href="' + \
+            htmlcontent += '\n              <li><a class="usertag" href="' + \
                            config.BASE_URL + '/tags/' + tag[0] + \
                            '">' + tag[0] + '</a> (' + str(tag[1]) + ')</li>'
 
@@ -2043,10 +2095,10 @@ class Htmlizer(object):
         @param return: HTML content
         """
 
-        content = u'\n<ul class=\'tag-pages-link-list\'>\n'
+        content = '\n<ul class=\'tag-pages-link-list\'>\n'
 
         if not self.dict_of_tags_with_ids or tag not in self.dict_of_tags_with_ids:
-            return u'\nNo blog entries with this tag so far.\n'
+            return '\nNo blog entries with this tag so far.\n'
 
         # generate a list of timestamps (last update) and IDs for all
         # entries (in order to be able to sort it according to last
@@ -2070,15 +2122,15 @@ class Htmlizer(object):
 
             content += self.sanitize_internal_links(
                 config.TAGS,
-                u'  <li> <span class=\'timestamp\'>' +
+                '  <li> <span class=\'timestamp\'>' +
                 iso_timestamp +
                 '</span> [[id:' +
                 reference +
-                u'][' +
+                '][' +
                 self.metadata[reference]['title'] +
                 ']]</li>\n')
 
-        return content + u'</ul>\n'
+        return content + '</ul>\n'
 
     def _get_entry_folder_name_from_entryid(self, entryid):
         """
@@ -2131,7 +2183,7 @@ class Htmlizer(object):
         if entry['category'] == config.TAGS:
             # TAGS: url is like "/tags/mytag/"
             title = entry['title']
-            if u' ' in title:
+            if ' ' in title:
                 title = title.split(None, 1)[0]
                 message = self.current_entry_id_str() + \
                           "article is marked as tag page by tag \"" + config.TAG_FOR_TAG_ENTRY + \
@@ -2162,8 +2214,8 @@ class Htmlizer(object):
         """
 
         self.logging.debug(self.current_entry_id_str() +
-            "_create_target_path_for_id_with_targetdir(%s) called" %
-            entryid)
+                           "_create_target_path_for_id_with_targetdir(%s) called" %
+                           entryid)
 
         assert(os.path.isdir(self.targetdir))
         idpath = self._target_path_for_id_with_targetdir(entryid)
@@ -2241,35 +2293,36 @@ class Htmlizer(object):
         @param return: string with filename that can be used
         """
 
-        ## parse Memacs file and/or traverse file system only ONCE and store its result in dir_file_dict:
+        # parse Memacs file and/or traverse file system only ONCE and store its result in dir_file_dict:
         if len(self.filename_dict) == 0:
             self._populate_filename_dict()
         assert(len(self.filename_dict) > 0)
 
         filename = filename.replace('%20', ' ')  # replace HTML space characters with spaces
 
-        if filename in self.filename_dict.keys():
+        if filename in list(self.filename_dict.keys()):
             return filename
 
-        if filename not in self.filename_dict.keys() and re.match(self.TIMESTAMP_REGEX, filename[:19]):
+        if filename not in list(self.filename_dict.keys()) and re.match(self.TIMESTAMP_REGEX, filename[:19]):
             # filename starts with a time-stamp
             timestamp = filename[:19]
 
             # try to locate a similar named file (if ISO timestamp, look if there is a file with same timestamp)
-            files_with_matching_timestamps = [x for x in self.filename_dict.keys() if x.startswith(timestamp)]
+            files_with_matching_timestamps = [x for x in list(self.filename_dict.keys()) if x.startswith(timestamp)]
 
             if len(files_with_matching_timestamps) == 1:
                 # one alternative found -> use it
                 alternative_filename = files_with_matching_timestamps[0]
-                self.logging.warning(self.current_entry_id_str() + u'Image file \"' + filename +
-                                     u'\" could not be found within MEMACS_FILE_WITH_IMAGE_FILE_INDEX and/or ' + \
+                self.logging.warning(self.current_entry_id_str() +
+                                     'Image file \"' + filename +
+                                     '\" could not be found within MEMACS_FILE_WITH_IMAGE_FILE_INDEX and/or ' +
                                      'DIRECTORIES_WITH_IMAGE_ORIGINALS. However, I found \"' +
                                      alternative_filename + '\" which has the same unique time-stamp. I\'ll take it instead.')
                 return alternative_filename
 
             elif len(files_with_matching_timestamps) == 0:
                 # no matching alternative found
-                message = self.current_entry_id_str() + u'File \"' + filename + '\" could not be ' + \
+                message = self.current_entry_id_str() + 'File \"' + filename + '\" could not be ' + \
                           'located within MEMACS_FILE_WITH_IMAGE_FILE_INDEX ' + \
                           'and/or DIRECTORIES_WITH_IMAGE_ORIGINALS. Its time-stamp could not be found in ' + \
                           'another filename as well.'
@@ -2278,16 +2331,16 @@ class Htmlizer(object):
 
             else:
                 # multiple matching alternatives found -> error
-                message = self.current_entry_id_str() + u'File \"' + filename + '\" could not be ' + \
+                message = self.current_entry_id_str() + 'File \"' + filename + '\" could not be ' + \
                           'located within MEMACS_FILE_WITH_IMAGE_FILE_INDEX and/or ' + \
                           'DIRECTORIES_WITH_IMAGE_ORIGINALS. It starts with a time-stamp which could be found in ' + \
                           'other files but it is not unique. Please adapt accordingly: ' + str(files_with_matching_timestamps)
                 self.logging.critical(message)
                 raise HtmlizerException(self.current_entry_id, message)
 
-        if filename not in self.filename_dict.keys():
+        if filename not in list(self.filename_dict.keys()):
             # recover mechanism (using ISO timestamp) did not work either -> error
-            message = self.current_entry_id_str() + u'File \"' + filename + '\" could not be located ' + \
+            message = self.current_entry_id_str() + 'File \"' + filename + '\" could not be located ' + \
                       'within MEMACS_FILE_WITH_IMAGE_FILE_INDEX ' + \
                       'and/or DIRECTORIES_WITH_IMAGE_ORIGINALS.'
             self.logging.critical(message)
@@ -2352,12 +2405,12 @@ class Htmlizer(object):
         """
 
         # image was located using locate_cust_link_image() prior to this function
-        assert(filename in self.filename_dict.keys())
+        assert(filename in list(self.filename_dict.keys()))
 
         image_file_path = self.filename_dict[filename]
         if not os.path.isfile(image_file_path):
             # image found in index but not on hard disk
-            message = self.current_entry_id_str() + u'File \"' + filename + '\" is found within Memacs index (\"' + \
+            message = self.current_entry_id_str() + 'File \"' + filename + '\" is found within Memacs index (\"' + \
                       image_file_path + '\") but could not be located in the file system.'
             self.logging.critical(message)
             raise HtmlizerException(self.current_entry_id, message)
@@ -2365,11 +2418,11 @@ class Htmlizer(object):
             # path to image file was found
             destinationfile = os.path.join(articlepath, self.get_scaled_filename(filename, attributes))
 
-            if 'width' not in attributes.keys() and not os.path.isfile(destinationfile):
+            if 'width' not in list(attributes.keys()) and not os.path.isfile(destinationfile):
                 # User did not state any width → use original file
                 self._copy_a_file(image_file_path, destinationfile)
 
-            elif 'width' in attributes.keys() and not os.path.isfile(destinationfile):
+            elif 'width' in list(attributes.keys()) and not os.path.isfile(destinationfile):
                 # User did specify a width → resize if necessary
                 try:
 
@@ -2400,7 +2453,7 @@ class Htmlizer(object):
                             if os.path.getmtime(cached_image_file_name) < os.path.getmtime(image_file_path):
                                 self.logging.debug('CACHE MISS: mtime of cached file "' + cached_image_file_name +
                                                    '" is older than the original file "' + image_file_path +
-                                                   '". Therefore I scale a new one to "' + destimationfile + '".')
+                                                   '". Therefore I scale a new one to "' + destinationfile + '".')
                                 self._scale_and_write_image_file(image_file_data, destinationfile, newwidth, newheight)
                                 self.stats_images_resized += 1
                                 self._update_image_cache(destinationfile, cached_image_file_name)
@@ -2419,7 +2472,7 @@ class Htmlizer(object):
                     raise
 
             else:
-                self.logging.debug(u'Image file \"' + filename + u'\" was already copied for this directory \"' + articlepath + u'\" -> multiple usages within same blog article')
+                self.logging.debug('Image file \"' + filename + '\" was already copied for this directory \"' + articlepath + '\" -> multiple usages within same blog article')
 
         # FIXXME: FUTURE? generate scaled version when width/height is set
 
@@ -2428,7 +2481,8 @@ class Htmlizer(object):
         Locates and parses the directory config.DIRECTORIES_WITH_IMAGE_ORIGINALS for filename index. Result is stored in self.filename_dict.
         """
 
-        if (config.IMAGE_INCLUDE_METHOD == config.IMAGE_INCLUDE_METHOD_MEMACS or
+        self.logging.info('Building index of files …')
+        if (config.IMAGE_INCLUDE_METHOD == config.IMAGE_INCLUDE_METHOD_MEMACS or \
             config.IMAGE_INCLUDE_METHOD == config.IMAGE_INCLUDE_METHOD_MEMACS_THEN_DIR):
 
             assert(os.path.isfile(config.MEMACS_FILE_WITH_IMAGE_FILE_INDEX))
@@ -2438,7 +2492,7 @@ class Htmlizer(object):
             # results in: ('/home/user/directory/subdirectory/2010-03-18_Presentation_ProductXY.pdf', '2010-03-18_Presentation_ProductXY.pdf')
             MEMACS_FILE_LINE_REGEX = re.compile(r'^\*\* <.+> \[\[file:([^\]]+)\]\[(.+)\]\]$')
 
-            self.logging.info(u'Building index of Memacs as stated in MEMACS_FILE_WITH_IMAGE_FILE_INDEX  \"' + config.MEMACS_FILE_WITH_IMAGE_FILE_INDEX + u'\" …')
+            self.logging.debug('Building index of Memacs as stated in MEMACS_FILE_WITH_IMAGE_FILE_INDEX  \"' + config.MEMACS_FILE_WITH_IMAGE_FILE_INDEX + '\" …')
             with codecs.open(config.MEMACS_FILE_WITH_IMAGE_FILE_INDEX, encoding='utf-8') as memacs_file_handle:
                 for line in memacs_file_handle:
                     components = re.match(MEMACS_FILE_LINE_REGEX, line)
@@ -2465,7 +2519,7 @@ class Htmlizer(object):
                     # if an image could not be located later on, there will be an error
                     continue
 
-                self.logging.info(u'Building index of files as stated in DIRECTORIES_WITH_IMAGE_ORIGINALS[' + str(index) + '] \"' + currentdir + u'\" …')
+                self.logging.debug('Building index of files as stated in DIRECTORIES_WITH_IMAGE_ORIGINALS[' + str(index) + '] \"' + currentdir + '\" …')
                 for (dirpath, dirnames, filenames) in os.walk(currentdir):
                     # Example:
                     # (Pdb) dirpath
@@ -2478,14 +2532,14 @@ class Htmlizer(object):
                         self.filename_dict[filename] = os.path.join(dirpath, filename)
                 index += 1
 
-        self.logging.info(u'Index of filename dict holds ' + str(len(self.filename_dict)) + ' entries')
+        self.logging.debug('Index of filename dict holds ' + str(len(self.filename_dict)) + ' entries')
 
     def current_entry_id_str(self):
         "returns a string representation of self.current_entry_id"
         if self.current_entry_id:
-            return u'[Entry ID '+ self.current_entry_id + u'] • '
+            return '[Entry ID ' + self.current_entry_id + '] • '
         else:
-            return u'[Not related to a specific entry ID] • '
+            return '[Not related to a specific entry ID] • '
 
 #    def __filter_org_entry_for_blog_entries(self):
 #        """

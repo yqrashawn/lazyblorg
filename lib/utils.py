@@ -1,15 +1,15 @@
 # -*- coding: utf-8; mode: python; -*-
-# Time-stamp: <2017-06-17 18:15:48 vk>
+# Time-stamp: <2018-09-23 13:48:17 vk>
 
 import config
 from sys import stdout, exit
 import logging
 from hashlib import md5  # generating checksums
 from time import localtime  # for generating Org-mode timestamps
-from orgformat import *
+from .orgformat import *
 from operator import itemgetter  # for sorted()
 import datetime
-
+import os
 
 class Utils(object):
     """
@@ -21,64 +21,71 @@ class Utils(object):
     # You can add as many languages as you wish. There have to be at least two of them.
     # Clearly, it helps when you omit stepwords that occur in multiple
     # languages.
-    STOPWORDS = [('english', [u'I', u'me', u'my', u'myself', u'we', u'our', u'ours',
-                              u'ourselves', u'you', u'your', u'yours', u'yourself',
-                              u'yourselves', u'he', u'him', u'his', u'himself',
-                              u'she', u'her', u'hers', u'herself', u'it', u'its',
-                              u'itself', u'they', u'them', u'their', u'theirs', u'themselves',
-                              u'what', u'which', u'who', u'whom', u'this', u'that',
-                              u'these', u'those', u'is', u'are', u'were', u'be',
-                              u'been', u'being', u'have', u'has', u'had', u'having',
-                              u'do', u'does', u'did', u'doing', u'a', u'the',
-                              u'and', u'but', u'if', u'or', u'because', u'as',
-                              u'until', u'while', u'of', u'at', u'by', u'for',
-                              u'with', u'about', u'against', u'between', u'into', u'through',
-                              u'during', u'before', u'after', u'above', u'below', u'to',
-                              u'from', u'up', u'down', u'on', u'off', u'over',
-                              u'under', u'again', u'further', u'then', u'once', u'here',
-                              u'there', u'when', u'where', u'why', u'how', u'all',
-                              u'any', u'both', u'each', u'few', u'more', u'most',
-                              u'other', u'some', u'such', u'no', u'nor', u'not',
-                              u'only', u'own', u'same', u'than', u'too', u'very',
-                              u'can', u'just', u'don', u'should', u'now']),
-                 ('deutsch', [u'aber', u'alle', u'allem', u'allen', u'aller', u'alles', u'als',
-                              u'also', u'ander', u'andere', u'anderem', u'anderen', u'anderer',
-                              u'anderes', u'anderm', u'andern', u'anderr', u'anders', u'auch',
-                              u'auf', u'aus', u'bei', u'bin', u'bis', u'bist',
-                              u'da', u'damit', u'dann', u'der', u'den', u'des',
-                              u'dem', u'die', u'das', u'daß', u'derselbe', u'derselben',
-                              u'denselben', u'desselben', u'demselben', u'dieselbe', u'dieselben', u'dasselbe',
-                              u'dazu', u'dein', u'deine', u'deinem', u'deinen', u'deiner',
-                              u'deines', u'denn', u'derer', u'dessen', u'dich', u'dir',
-                              u'du', u'dies', u'diese', u'diesem', u'diesen', u'dieser',
-                              u'dieses', u'doch', u'dort', u'durch', u'ein', u'eine',
-                              u'einem', u'einen', u'einer', u'eines', u'einig', u'einige',
-                              u'einigem', u'einigen', u'einiger', u'einiges', u'einmal', u'er',
-                              u'ihn', u'ihm', u'es', u'etwas', u'euer', u'eure',
-                              u'eurem', u'euren', u'eurer', u'eures', u'für', u'gegen',
-                              u'gewesen', u'hab', u'habe', u'haben', u'hat', u'hatte',
-                              u'hatten', u'hier', u'hin', u'hinter', u'ich', u'mich',
-                              u'mir', u'ihr', u'ihre', u'ihrem', u'ihren', u'ihrer',
-                              u'ihres', u'euch', u'im', u'indem', u'ins', u'ist',
-                              u'jede', u'jedem', u'jeden', u'jeder', u'jedes', u'jene',
-                              u'jenem', u'jenen', u'jener', u'jenes', u'jetzt', u'kann',
-                              u'kein', u'keine', u'keinem', u'keinen', u'keiner', u'keines',
-                              u'können', u'könnte', u'machen', u'man', u'manche', u'manchem',
-                              u'manchen', u'mancher', u'manches', u'mein', u'meine', u'meinem',
-                              u'meinen', u'meiner', u'meines', u'mit', u'muss', u'musste',
-                              u'nach', u'nicht', u'nichts', u'noch', u'nun', u'nur',
-                              u'ob', u'oder', u'ohne', u'sehr', u'sein', u'seine',
-                              u'seinem', u'seinen', u'seiner', u'seines', u'selbst', u'sich',
-                              u'sie', u'ihnen', u'sind', u'solche', u'solchem', u'solchen',
-                              u'solcher', u'solches', u'soll', u'sollte', u'sondern', u'sonst',
-                              u'über', u'um', u'und', u'uns', u'unse', u'unsem',
-                              u'unsen', u'unser', u'unses', u'unter', u'viel', u'vom',
-                              u'von', u'vor', u'während', u'war', u'waren', u'warst',
-                              u'weg', u'weil', u'weiter', u'welche', u'welchem', u'welchen',
-                              u'welcher', u'welches', u'wenn', u'werde', u'werden', u'wie',
-                              u'wieder', u'wir', u'wird', u'wirst', u'wo', u'wollen',
-                              u'wollte', u'würde', u'wüden', u'zu', u'zum', u'zur',
-                              u'zwar', u'zwischen'])]
+    STOPWORDS = [('english', ['I', 'me', 'my', 'myself', 'we', 'our', 'ours',
+                              'ourselves', 'you', 'your', 'yours', 'yourself',
+                              'yourselves', 'he', 'him', 'his', 'himself',
+                              'she', 'her', 'hers', 'herself', 'it', 'its',
+                              'itself', 'they', 'them', 'their', 'theirs', 'themselves',
+                              'what', 'which', 'who', 'whom', 'this', 'that',
+                              'these', 'those', 'is', 'are', 'were', 'be',
+                              'been', 'being', 'have', 'has', 'had', 'having',
+                              'do', 'does', 'did', 'doing', 'a', 'the',
+                              'and', 'but', 'if', 'or', 'because', 'as',
+                              'until', 'while', 'of', 'at', 'by', 'for',
+                              'with', 'about', 'against', 'between', 'into', 'through',
+                              'during', 'before', 'after', 'above', 'below', 'to',
+                              'from', 'up', 'down', 'on', 'off', 'over',
+                              'under', 'again', 'further', 'then', 'once', 'here',
+                              'there', 'when', 'where', 'why', 'how', 'all',
+                              'any', 'both', 'each', 'few', 'more', 'most',
+                              'other', 'some', 'such', 'no', 'nor', 'not',
+                              'only', 'own', 'same', 'than', 'too', 'very',
+                              'can', 'just', 'don', 'should', 'now']),
+                 ('deutsch', ['aber', 'alle', 'allem', 'allen', 'aller', 'alles', 'als',
+                              'also', 'ander', 'andere', 'anderem', 'anderen', 'anderer',
+                              'anderes', 'anderm', 'andern', 'anderr', 'anders', 'auch',
+                              'auf', 'aus', 'bei', 'bin', 'bis', 'bist',
+                              'da', 'damit', 'dann', 'der', 'den', 'des',
+                              'dem', 'die', 'das', 'daß', 'derselbe', 'derselben',
+                              'denselben', 'desselben', 'demselben', 'dieselbe', 'dieselben', 'dasselbe',
+                              'dazu', 'dein', 'deine', 'deinem', 'deinen', 'deiner',
+                              'deines', 'denn', 'derer', 'dessen', 'dich', 'dir',
+                              'du', 'dies', 'diese', 'diesem', 'diesen', 'dieser',
+                              'dieses', 'doch', 'dort', 'durch', 'ein', 'eine',
+                              'einem', 'einen', 'einer', 'eines', 'einig', 'einige',
+                              'einigem', 'einigen', 'einiger', 'einiges', 'einmal', 'er',
+                              'ihn', 'ihm', 'es', 'etwas', 'euer', 'eure',
+                              'eurem', 'euren', 'eurer', 'eures', 'für', 'gegen',
+                              'gewesen', 'hab', 'habe', 'haben', 'hat', 'hatte',
+                              'hatten', 'hier', 'hin', 'hinter', 'ich', 'mich',
+                              'mir', 'ihr', 'ihre', 'ihrem', 'ihren', 'ihrer',
+                              'ihres', 'euch', 'im', 'indem', 'ins', 'ist',
+                              'jede', 'jedem', 'jeden', 'jeder', 'jedes', 'jene',
+                              'jenem', 'jenen', 'jener', 'jenes', 'jetzt', 'kann',
+                              'kein', 'keine', 'keinem', 'keinen', 'keiner', 'keines',
+                              'können', 'könnte', 'machen', 'man', 'manche', 'manchem',
+                              'manchen', 'mancher', 'manches', 'mein', 'meine', 'meinem',
+                              'meinen', 'meiner', 'meines', 'mit', 'muss', 'musste',
+                              'nach', 'nicht', 'nichts', 'noch', 'nun', 'nur',
+                              'ob', 'oder', 'ohne', 'sehr', 'sein', 'seine',
+                              'seinem', 'seinen', 'seiner', 'seines', 'selbst', 'sich',
+                              'sie', 'ihnen', 'sind', 'solche', 'solchem', 'solchen',
+                              'solcher', 'solches', 'soll', 'sollte', 'sondern', 'sonst',
+                              'über', 'um', 'und', 'uns', 'unse', 'unsem',
+                              'unsen', 'unser', 'unses', 'unter', 'viel', 'vom',
+                              'von', 'vor', 'während', 'war', 'waren', 'warst',
+                              'weg', 'weil', 'weiter', 'welche', 'welchem', 'welchen',
+                              'welcher', 'welches', 'wenn', 'werde', 'werden', 'wie',
+                              'wieder', 'wir', 'wird', 'wirst', 'wo', 'wollen',
+                              'wollte', 'würde', 'wüden', 'zu', 'zum', 'zur',
+                              'zwar', 'zwischen'])]
+
+    FILENAME_TAG_SEPARATOR = ' -- '
+    BETWEEN_TAG_SEPARATOR = ' '
+    FILE_WITH_TAGS_REGEX = re.compile("(.+?)" + FILENAME_TAG_SEPARATOR + "(.+?)(\.(\w+))??$")
+    FILE_WITH_TAGS_REGEX_FILENAME_INDEX = 1  # component.group(1)
+    FILE_WITH_TAGS_REGEX_TAGLIST_INDEX = 2
+    FILE_WITH_TAGS_REGEX_EXTENSION_INDEX = 4
 
     def __init__(self):
 
@@ -150,11 +157,11 @@ class Utils(object):
         logger.propagate = False
 
         # "application" code
-        ## logger.debug("debug message")
-        ## logger.info("info message")
-        ## logger.warn("warn message")
-        ## logger.error("error message")
-        ## logger.critical("critical message")
+        # logger.debug("debug message")
+        # logger.info("info message")
+        # logger.warn("warn message")
+        # logger.error("error message")
+        # logger.critical("critical message")
 
         # logger.debug("logging initialized")
 
@@ -172,7 +179,7 @@ class Utils(object):
     # add daily repeating that user gets it on agenda also on following days:
             datetimestamp = datetimestamp[:-1] + ' +1d>'
 
-            outputhandle.write(u"\n** " +
+            outputhandle.write("\n** " +
                                datetimestamp +
                                " lazyblorg " + level.upper() + ": " +
                                message +
@@ -190,7 +197,7 @@ class Utils(object):
         @param return: hexadecimal value of the hash
         """
 
-        return md5(str([title, content])).hexdigest()
+        return md5(str([title, content]).encode('utf-8')).hexdigest()
 
     @staticmethod
     def _add_entry_to_entries_timeline_by_published(
@@ -233,7 +240,7 @@ class Utils(object):
         #  'finished-timestamp-history': [datetime.datetime(2013, 8, 24, 22, 49)],
         #  'id': u'case5'}
 
-        if 'firstpublishTS' in entry.keys():
+        if 'firstpublishTS' in list(entry.keys()):
             published = entry['firstpublishTS']
             # extract year, month, day
             year = published.year
@@ -247,7 +254,7 @@ class Utils(object):
             month = published[0].month
             day = published[0].day
 
-        if year not in entries_timeline_by_published.keys():
+        if year not in list(entries_timeline_by_published.keys()):
             # initialize a new year when its first entry is found:
             entries_timeline_by_published[year] = [
                 [],  # ignore month 0
@@ -334,7 +341,7 @@ class Utils(object):
                 # this is really getting nasty here. Could not make it work
                 # using another layer of [item for...]
                 all_entries = []
-                for year in entries_timeline_by_published.keys():
+                for year in list(entries_timeline_by_published.keys()):
                     all_entries.extend(
                         Utils.get_entries_of_published_date(
                             entries_timeline_by_published, year))
@@ -367,7 +374,7 @@ class Utils(object):
         for entry in blogdata:
 
             # entry example:
-            #{'category': 'TEMPORAL',
+            # {'category': 'TEMPORAL',
             # 'level': 2,
             # 'latestupdateTS': datetime.datetime(2013, 8, 24, 22, 49),
             # 'usertags': [],
@@ -384,17 +391,17 @@ class Utils(object):
             checksum = Utils.__generate_checksum_for_blog_entry(
                 entry['title'], entry['content'])
 
-            if entry['id'] in metadata.keys():
+            if entry['id'] in list(metadata.keys()):
                 logging.error("We got a duplicate ID in blogdata: \"" +
                               str(entry['id']) +
                               "\". Please correct it and re-run this tool.")
                 #   [x['id'] for x in blogdata]
                 Utils.error_exit(30)
             else:
-                assert('created' in entry.keys())
-                assert('latestupdateTS' in entry.keys())
-                assert('firstpublishTS' in entry.keys())
-                assert('title' in entry.keys())
+                assert('created' in list(entry.keys()))
+                assert('latestupdateTS' in list(entry.keys()))
+                assert('firstpublishTS' in list(entry.keys()))
+                assert('title' in list(entry.keys()))
                 metadata[entry['id']] = {'created': entry['created'],
                                          'latestupdateTS': entry['latestupdateTS'],
                                          'firstpublishTS': entry['firstpublishTS'],
@@ -449,7 +456,7 @@ class Utils(object):
         return metadata
 
     @staticmethod
-    def list_of_dicts_are_equal(list1, list2, ignoreorder=False):
+    def list_of_dicts_are_equal(list1, list2):
         """
 
         Dicts in Python are not sorted. So there is no simple
@@ -458,7 +465,6 @@ class Utils(object):
 
         @param list1: a list containing dicts with key/value-pairs
         @param list2: a list containing dicts with key/value-pairs
-        @param ignoreorder: consider two lists with different order but same content as equal
         @param return: True (if list1 equals list2) or False (otherwise)
         """
 
@@ -477,18 +483,24 @@ class Utils(object):
             # quick check: if length differs, they are definitely different
             return False
 
-        comparisonlist1 = list1
-        comparisonlist2 = list2
-        if ignoreorder:
-            comparisonlist1 = sorted(list1)
-            comparisonlist2 = sorted(list2)
+        try:
+            set_list1 = set(tuple(sorted(d.items())) for d in list1)
+            set_list2 = set(tuple(sorted(d.items())) for d in list2)
+            set_difference = set_list1.symmetric_difference(set_list2)  # == set() if identical
+        except TypeError:
+            # if lists are part of the game: they are not hashable and therefore they cause an issue:
+            # tuple(sorted(list1[0].items())) → fine:
+            #    ( ('category', 'TEMPORAL'), ('finished-timestamp-history', [datetime.datetime(2013, 2, 14, 19, 2)]) )
+            # set(tuple(sorted(list1[0].items()))) → TypeError: unhashable type: 'list'
+            #    set(( ('category', 'TEMPORAL'), ('finished-timestamp-history', [datetime.datetime(2013, 2, 14, 19, 2)]) ))
 
-        for entry in range(len(comparisonlist1)):
-            # do the hard way: comparing content
-            if not comparisonlist1[entry] == comparisonlist2[entry]:
-                return False
+            # using an alternative method of comparing things:
+            items1 = [tuple(sorted(d.items())) for d in list1]
+            items2 = [tuple(sorted(d.items())) for d in list2]
+            zipped = zip(sorted(items1), sorted(items2))
+            return [idx for idx, pair in enumerate(zipped) if pair[0] != pair[1]] == []
 
-        return True
+        return set_difference == set()
 
     @staticmethod
     def __UNFINISHED_datastructs_are_equal(data1, data2, ignoreorder=False):
@@ -523,7 +535,7 @@ class Utils(object):
         elif not isinstance(data1, type(data2)):
             return False
 
-        elif type(data1) in [int, float, long, complex, str, unicode]:
+        elif type(data1) in [int, float, int, complex, str]:
             return data1 == data2
 
         elif isinstance(data1, dict):
@@ -532,15 +544,15 @@ class Utils(object):
             # -> if dicts contain lists, this does not compare the list content!
 
             # check for trivial cases:
-            if len(data1.keys()) != len(data2.keys()):
+            if len(list(data1.keys())) != len(list(data2.keys())):
                 return False
-            if len(data1.keys()) == 0:
+            if len(list(data1.keys())) == 0:
                 return True
 
             # FIXXME: sorting the dict might be unnecessary since: {3:4, 'b':2} == {'b':2, 3:4}
             # dicts don't keep the order (unless using Ordered....)
-            sorted1 = sorted(data1.items(), key=lambda t: t[0])
-            sorted2 = sorted(data2.items(), key=lambda t: t[0])
+            sorted1 = sorted(list(data1.items()), key=lambda t: t[0])
+            sorted2 = sorted(list(data2.items()), key=lambda t: t[0])
             if sorted1 == sorted2:
                 # if this is true, we do not have to walk through the content
                 return True
@@ -594,7 +606,7 @@ class Utils(object):
         result = destination
 
         for key in source:
-            if key in result.keys():
+            if key in list(result.keys()):
                 for element in source[key]:
                     result[key].append(element)
             else:
@@ -682,15 +694,15 @@ class Utils(object):
                 string1 = list1[currentitem]
                 string2 = list2[currentitem]
             if string1 != string2:
-                print "=================  first difference  ===================== in line " + str(currentitem)
-                print "       [" + str(list1[currentitem - 1]).rstrip() + "]"
-                print "found  [" + str(list1[currentitem]).rstrip() + "]"
-                print "       [" + str(list1[currentitem + 1]).rstrip() + "]"
-                print "    ---------------  comparison data:  --------------------"
-                print "       [" + str(list2[currentitem - 1]).rstrip() + "]"
-                print "should [" + str(list2[currentitem]).rstrip() + "]"
-                print "       [" + str(list2[currentitem + 1]).rstrip() + "]"
-                print "=================                    ====================="
+                print("=================  first difference  ===================== in line " + str(currentitem))
+                print("       [" + str(list1[currentitem - 1]).rstrip() + "]")
+                print("found  [" + str(list1[currentitem]).rstrip() + "]")
+                print("       [" + str(list1[currentitem + 1]).rstrip() + "]")
+                print("    ---------------  comparison data:  --------------------")
+                print("       [" + str(list2[currentitem - 1]).rstrip() + "]")
+                print("should [" + str(list2[currentitem]).rstrip() + "]")
+                print("       [" + str(list2[currentitem + 1]).rstrip() + "]")
+                print("=================                    =====================")
                 return False
 
         logger = logging.getLogger('lazyblorg.Utils.diff_two_lists')
@@ -770,7 +782,7 @@ class Utils(object):
 
         assert(entry)
         assert(isinstance(entry, dict))
-        assert('finished-timestamp-history' in entry.keys())
+        assert('finished-timestamp-history' in list(entry.keys()))
         assert(search_for == "OLDEST" or search_for == "NEWEST")
 
         returntimestamp = False
@@ -810,6 +822,33 @@ class Utils(object):
             str(timestamp.day).zfill(2), \
             str(timestamp.hour).zfill(2), \
             str(timestamp.minute).zfill(2)
+
+    @staticmethod
+    def contains_tag(filename, tagname=False):
+        """
+        Returns true if tagname is a tag within filename. If tagname is
+        empty, return if filename contains any tag at all.
+
+        @param filename: an unicode string containing a file name
+        @param tagname: (optional) an unicode string containing a tag name
+        @param return: True|False
+        """
+
+        assert(filename.__class__ == str)
+        if tagname:
+            assert(tagname.__class__ == str)
+
+        components = re.match(Utils.FILE_WITH_TAGS_REGEX, os.path.basename(filename))
+
+        if not tagname:
+            return components is not None
+        elif not components:
+            # logger.debug("file [%s] does not match FILE_WITH_TAGS_REGEX" % filename)
+            return False
+        else:
+            tags = components.group(Utils.FILE_WITH_TAGS_REGEX_TAGLIST_INDEX).split(Utils.BETWEEN_TAG_SEPARATOR)
+            return tagname in tags
+
 
 # Local Variables:
 # mode: flyspell

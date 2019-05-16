@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8; mode: python; -*-
 
 import config  # lazyblorg-global settings
@@ -30,7 +30,6 @@ class TestOrgParser(unittest.TestCase):
 
         # manually written Org-mode file; has to be placed in "lib/tests/"
         testfile_org = join("lib", "tests", "simple.org")
-        blog_data = []  # initialize the empty list
         parser = OrgParser(testfile_org)
 
         try:
@@ -42,25 +41,25 @@ class TestOrgParser(unittest.TestCase):
         except AssertionError:
             pass  # this *should* be cause an AssertionError
         try:
-            self.assertEqual(parser._get_list_indentation_number([u'x']), 0)
+            self.assertEqual(parser._get_list_indentation_number(['x']), 0)
         except AssertionError:
             pass  # this *should* be cause an AssertionError
 
-        self.assertEqual(parser._get_list_indentation_number(u''), 0)
+        self.assertEqual(parser._get_list_indentation_number(''), 0)
         self.assertEqual(parser._get_list_indentation_number('x'), 0)
-        self.assertEqual(parser._get_list_indentation_number(u'x'), 0)
-        self.assertEqual(parser._get_list_indentation_number(u'-'), 0)
+        self.assertEqual(parser._get_list_indentation_number('x'), 0)
+        self.assertEqual(parser._get_list_indentation_number('-'), 0)
         self.assertEqual(parser._get_list_indentation_number('  - foo bar'), 4)
         self.assertEqual(
-            parser._get_list_indentation_number(u'  - foo bar'), 4)
+            parser._get_list_indentation_number('  - foo bar'), 4)
         self.assertEqual(
-            parser._get_list_indentation_number(u'    foo bar'), 4)
+            parser._get_list_indentation_number('    foo bar'), 4)
         self.assertEqual(
-            parser._get_list_indentation_number(u'  * foo bar'), 4)
+            parser._get_list_indentation_number('  * foo bar'), 4)
         self.assertEqual(
-            parser._get_list_indentation_number(u'  42) foo bar'), 6)
+            parser._get_list_indentation_number('  42) foo bar'), 6)
         self.assertEqual(
-            parser._get_list_indentation_number(u'  23. foo bar'), 6)
+            parser._get_list_indentation_number('  23. foo bar'), 6)
 
     def test_simple_org_to_blogdata(self):
 
@@ -85,7 +84,7 @@ class TestOrgParser(unittest.TestCase):
 
         # write data to dump file:
         with open(testfile_temp_output, 'wb') as output:
-            pickle.dump(blog_data, output, config.PICKLE_FORMAT)
+            pickle.dump(blog_data, output)
 
         # check, if dump file was created:
         self.assertTrue(isfile(testfile_temp_output))
@@ -93,7 +92,7 @@ class TestOrgParser(unittest.TestCase):
         reference_blog_data = None
 
         # read reference data from file:
-        with open(testfile_temp_reference, 'r') as fileinput:
+        with open(testfile_temp_reference, 'rb') as fileinput:
             reference_blog_data = pickle.load(fileinput)
 
         # a more fine-grained diff (only) on the first element in blog_data:
@@ -112,10 +111,9 @@ class TestOrgParser(unittest.TestCase):
         self.assertTrue(
             Utils.list_of_dicts_are_equal(
                 reference_blog_data,
-                blog_data,
-                ignoreorder=True))
+                blog_data))
 
-## END OF FILE ###########################################################
+# END OF FILE ###########################################################
 # Local Variables:
 # mode: flyspell
 # eval: (ispell-change-dictionary "en_US")

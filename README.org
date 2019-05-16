@@ -7,7 +7,6 @@ left to add, but when there is nothing left to take away.» ([[https://en.wikipe
 Saint-Exupéry]])
 #+END_QUOTE
 
-
 * lazyblorg -- blogging with Org-mode for very lazy people
 
 This is a web log (blog) environment for [[http://en.wikipedia.org/wiki/Emacs][GNU Emacs]] with [[http://orgmode.org/][Org-mode]]
@@ -51,6 +50,39 @@ cool.
 Or simply wannabes. I'm perfectly fine with this as long as they use
 lazyblorg.
 
+** Other people using lazyblorg
+
+Pages using lazyblorg are listed [[https://karl-voit.at/tags/lazyblorg/][on my personal tag page on
+"lazyblorg"]]. Please do drop me a line when you want to get your page
+added to the list.
+
+Quote from [[https://seppjansen.com/2018/04/24/site-using-lazyblorg/][Sepp Jansen]]:
+
+#+BEGIN_QUOTE
+[...]
+
+But when I revisited lazyblorg after studying the other packages, it
+suddenly seemed like a better solution. After only a short time of
+reading I figured out the entire templating and post generation
+system. Although not the most elegant, it is super simple and easy to
+understand. And those are my most important points.
+
+The developer states that it is easy to configure and start building,
+and is absolutely right.
+
+In just a few hours I went from installing dependencies to having a
+fully working website, including some layout and CSS customization.
+The included HTML and CSS is easy to modify so I could (lazily) make
+the site look like I wanted it to without too much digging in many
+little files. I even managed to make it look a lot like my old site
+without too much effort! Lazyblorg really lives up to its name!
+
+[...]
+
+I really like lazyblorg, and I'll happily manage [[https://seppjansen.com/][this website]] with it
+for as long as possible.
+#+END_QUOTE
+
 ** Skills necessary
 
 - modifying configuration settings, e.g., in script files
@@ -62,6 +94,8 @@ lazyblorg.
 :PROPERTIES:
 :CREATED:  [2014-03-14 Fr 13:24]
 :END:
+
+lazyblorg is written in *Python 3*.
 
 Development platform is Debian GNU/Linux. So with any decent GNU/Linux
 you should be fine as well.
@@ -264,12 +298,13 @@ See https://github.com/novoid/lazyblorg/wiki/FAQs
 
 * Installing and Starting with lazyblorg
 
-Currently, lazyblorg is in *beta status*. It's not finished
-yet. However, I am using it for [[http://Karl-Voit.at][my own blog]] and therefore it gets more
-and more ready to use as I add new features.
+I am using it for [[http://Karl-Voit.at][my own blog]] and therefore it gets more and more
+ready to use as I add new features.
 
 What's working so far:
-- parsing a very basic sub-set of Org-mode
+- parsing a large sub-set of Org-mode
+  - most important: the parser requires a blank line between different
+    Org mode elements
 - parsing the HTML templates
 - generating HTML5 pages with [[https://github.com/novoid/lazyblorg/wiki/Org-mode-Elements][a sub-set of the sub-set of the Org-mode
   syntax elements]]
@@ -281,7 +316,7 @@ The number of external dependencies is kept at a minimum.
 This is a list of the most important dependencies:
 - [[http://werkzeug.pocoo.org/][Werkzeug]]
   - for sanitizing path components
-  - I installed it on Debian GNU/Linux with ~apt-get install python-werkzeug~
+  - I installed it on Debian GNU/Linux with ~apt-get install python3-werkzeug~
 - pickle
   - object serialization
   - most likely: should be part of your Python distribution
@@ -289,14 +324,14 @@ This is a list of the most important dependencies:
   - some Org-mode syntax elements are being converted using [[http://pandoc.org/][Pandoc]] and
     its Python binding [[https://github.com/bebraw/pypandoc][pypandoc]]
   - you can get it via ~sudo apt-get install pandoc~ and ~sudo pip
-    install pypandoc~
+    install python3-pypandoc~
   - *Note:* Debian GNU/Linux 8 (Jessie) comes with a Pandoc version
     [[https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=800701][which is has bugs]]. Please install a more recent version. I
     upgraded to ~pandoc-1.15.1-1-amd64.deb~ from:
     http://pandoc.org/installing.html
 - [[https://pypi.python.org/pypi/opencv-python][opencv-python]]
   - lazyblorg scales embedded images according to the HTML export attributes
-  - Install using =sudo apt-get install python-opencv=
+  - Install using =sudo apt-get install python3-opencv=
 - [[http://sass-lang.com/][Sass]] (optional) if you want to generate your CSS from the scss-file
 
 All other libraries should be part of a standard Python distribution.

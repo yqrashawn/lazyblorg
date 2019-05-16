@@ -114,6 +114,15 @@ DIRECTORIES_WITH_IMAGE_ORIGINALS = ["testdata/testimages",
                                     os.path.join(os.path.expanduser("~"), *"blog/archive/digicam".split('/')),
                                     os.path.join(os.path.expanduser("~"), *"blog/archive/fromweb".split('/'))]
 
+## string: a filetags-tag - see
+## http://karl-voit.at/managing-digital-photographs/ and
+## https://github.com/novoid/filetags for explanation of filetags
+## EMPTY if no check is enforced
+## If not empty: Contains a tag which should be part of any image
+## file included. If the image file does not contain this filetag,
+## a warning is issued in the console output.
+WARN_IF_IMAGE_FILE_NOT_TAGGED_WITH="publicvoit"
+
 ## ===================================================================== ##
 ##                                                                       ##
 ##  These are INTERNAL lazyblorg-global configuration settings.          ##
@@ -127,9 +136,9 @@ DIRECTORIES_WITH_IMAGE_ORIGINALS = ["testdata/testimages",
 ## the assert-statements are doing basic sanity checks on the configured variables
 ## please do NOT change them unless you are ABSOLUTELY sure what this means for the rest of lazyblorg!
 
-assert(type(BASE_URL) == unicode)
-assert(BASE_URL.startswith(u'//'))
-assert(type(AUTHOR_NAME) == unicode)
+assert(type(BASE_URL) == str)
+assert(BASE_URL.startswith('//'))
+assert(type(AUTHOR_NAME) == str)
 
 assert(type(NUMBER_OF_TEASER_ARTICLES) == int)
 assert(NUMBER_OF_TEASER_ARTICLES > -1)
@@ -144,38 +153,38 @@ def assertTag(tag):
     """
     checks formal criteria of an Org-mode tag
     """
-    assert(type(tag) == unicode)
-    assert(u' ' not in tag)
-    assert(u':' not in tag)
-    assert(u'-' not in tag)
+    assert(type(tag) == str)
+    assert(' ' not in tag)
+    assert(':' not in tag)
+    assert('-' not in tag)
 
 
 ## string of the state which defines a blog entry to be published; states are not shown in result page
-BLOG_FINISHED_STATE = u'DONE'
+BLOG_FINISHED_STATE = 'DONE'
 
 assertTag(BLOG_FINISHED_STATE)
 
 
 ## tag that is expected in any blog entry category; tag does not get shown in list of user-tags
-TAG_FOR_BLOG_ENTRY = u'blog'
+TAG_FOR_BLOG_ENTRY = 'blog'
 
 assertTag(TAG_FOR_BLOG_ENTRY)
 
 
 ## if an entry is tagged with this, it's an TAGS entry; tag does not get shown in list of user-tags
-TAG_FOR_TAG_ENTRY = u'lb_tags'
+TAG_FOR_TAG_ENTRY = 'lb_tags'
 
 assertTag(TAG_FOR_TAG_ENTRY)
 
 
 ## if an entry is tagged with this, it's an PERSISTENT entry; tag does not get shown in list of user-tags
-TAG_FOR_PERSISTENT_ENTRY = u'lb_persistent'
+TAG_FOR_PERSISTENT_ENTRY = 'lb_persistent'
 
 assertTag(TAG_FOR_PERSISTENT_ENTRY)
 
 
 ## if an entry is tagged with this, it's an TEMPLATES entry; tag does not get shown in list of user-tags
-TAG_FOR_TEMPLATES_ENTRY = u'lb_templates'
+TAG_FOR_TEMPLATES_ENTRY = 'lb_templates'
 
 assertTag(TAG_FOR_TEMPLATES_ENTRY)
 
@@ -183,7 +192,7 @@ assertTag(TAG_FOR_TEMPLATES_ENTRY)
 ## if an entry is tagged with this, it will be omitted in feeds, the main page, and navigation pages; tag is shown in result page
 
 if os.environ["YQ_BLOG_DEV_MODE"] == "true":
-    TAG_FOR_HIDDEN = u'haha'
+    TAG_FOR_HIDDEN = u'foo'
 else:
     TAG_FOR_HIDDEN = u'hidden'
 
@@ -207,19 +216,13 @@ assert(type(TAGOVERVIEWPAGE) == str)
 
 
 ## base directory of the RSS/ATOM feeds:
-FEEDDIR = u'feeds'
+FEEDDIR = 'feeds'
 
-assert(type(FEEDDIR) == unicode)
+assert(type(FEEDDIR) == str)
 
 
-## format of the internal storage file
-## pickle offers, e.g., 0 (ASCII; human-readable) or pickle.HIGHEST_PROTOCOL (binary; more efficient)
-## see https://docs.python.org/2/library/pickle.html#data-stream-format
-#PICKLE_FORMAT = pickle.HIGHEST_PROTOCOL
-PICKLE_FORMAT = 0
+# 2018-09-23 Deprecated with migration to Python 3: PICKLE_FORMAT
 
-assert(type(PICKLE_FORMAT) == int)
-assert(PICKLE_FORMAT in [0, 1, 2])
 
 ## checking image inclusion variables:
 assert(type(CUSTOMIZED_IMAGE_LINK_KEY) == str)
@@ -236,7 +239,7 @@ for currentdir in DIRECTORIES_WITH_IMAGE_ORIGINALS:
     if os.path.isdir(DIRECTORIES_WITH_IMAGE_ORIGINALS[index]):
         dir_set_and_found = True
     else:
-        print 'Warning: DIRECTORIES_WITH_IMAGE_ORIGINALS[' + str(index) + '] which is set to \"' + str(currentdir) + '\" is not an existing directory. It will be ignored.'
+        print('Warning: DIRECTORIES_WITH_IMAGE_ORIGINALS[' + str(index) + '] which is set to \"' + str(currentdir) + '\" is not an existing directory. It will be ignored.')
     index += 1
 
 # define the three possibilities to include image files:
@@ -254,9 +257,9 @@ if len(CUSTOMIZED_IMAGE_LINK_KEY) > 0:
     dir_set_and_not_found = len(DIRECTORIES_WITH_IMAGE_ORIGINALS) > 1 and not dir_set_and_found
 
     if file_set_and_not_found:
-        print "Warning: MEMACS_FILE_WITH_IMAGE_FILE_INDEX is not empty but contains no existing file. Please fill it with an existing filename containing a Memacs file index or set either MEMACS_FILE_WITH_IMAGE_FILE_INDEX or CUSTOMIZED_IMAGE_LINK_KEY to an empty string."
+        print("Warning: MEMACS_FILE_WITH_IMAGE_FILE_INDEX is not empty but contains no existing file. Please fill it with an existing filename containing a Memacs file index or set either MEMACS_FILE_WITH_IMAGE_FILE_INDEX or CUSTOMIZED_IMAGE_LINK_KEY to an empty string.")
     if dir_set_and_not_found:
-        print "Warning: DIRECTORIES_WITH_IMAGE_ORIGINALS is not empty but contains no path to an existing directory. Please fill it with an existing path to a directory or set either DIRECTORIES_WITH_IMAGE_ORIGINALS or CUSTOMIZED_IMAGE_LINK_KEY to an empty string."
+        print("Warning: DIRECTORIES_WITH_IMAGE_ORIGINALS is not empty but contains no path to an existing directory. Please fill it with an existing path to a directory or set either DIRECTORIES_WITH_IMAGE_ORIGINALS or CUSTOMIZED_IMAGE_LINK_KEY to an empty string.")
 
     # three to the power of two: nine possibilities
     if file_set_and_found:
@@ -268,19 +271,19 @@ if len(CUSTOMIZED_IMAGE_LINK_KEY) > 0:
         if dir_set_and_found:
             IMAGE_INCLUDE_METHOD = IMAGE_INCLUDE_METHOD_DIR
         elif dir_not_set or dir_set_and_not_found:
-            print "Error: if CUSTOMIZED_IMAGE_LINK_KEY is set, at least one of MEMACS_FILE_WITH_IMAGE_FILE_INDEX or DIRECTORIES_WITH_IMAGE_ORIGINALS has to be filled and point to an existing file/directory."
+            print("Error: if CUSTOMIZED_IMAGE_LINK_KEY is set, at least one of MEMACS_FILE_WITH_IMAGE_FILE_INDEX or DIRECTORIES_WITH_IMAGE_ORIGINALS has to be filled and point to an existing file/directory.")
             import sys
             sys.exit(10)
     elif file_set_and_not_found:
         if dir_set_and_found:
             IMAGE_INCLUDE_METHOD = IMAGE_INCLUDE_METHOD_DIR
         elif dir_not_set or dir_set_and_not_found:
-            print "Error: if CUSTOMIZED_IMAGE_LINK_KEY is set, at least one of MEMACS_FILE_WITH_IMAGE_FILE_INDEX or DIRECTORIES_WITH_IMAGE_ORIGINALS has to be filled and point to an existing file/directory."
+            print("Error: if CUSTOMIZED_IMAGE_LINK_KEY is set, at least one of MEMACS_FILE_WITH_IMAGE_FILE_INDEX or DIRECTORIES_WITH_IMAGE_ORIGINALS has to be filled and point to an existing file/directory.")
             import sys
             sys.exit(11)
 
 if len(IMAGE_CACHE_DIRECTORY) > 0 and not os.path.isdir(IMAGE_CACHE_DIRECTORY):
-    print 'Warning: IMAGE_CACHE_DIRECTORY is set but points to a directory which does not exist. Either empty the string or create its cache directory at "' + IMAGE_CACHE_DIRECTORY + '".'
+    print('Warning: IMAGE_CACHE_DIRECTORY is set but points to a directory which does not exist. Either empty the string or create its cache directory at "' + IMAGE_CACHE_DIRECTORY + '".')
 
 ## END OF FILE #################################################################
 # Local Variables:
