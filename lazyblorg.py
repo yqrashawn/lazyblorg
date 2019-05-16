@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 # -*- coding: utf-8; mode: python; -*-
 PROG_VERSION = u"Time-stamp: <2017-08-28 13:25:09 vk>"
 PROG_VERSION_DATE = PROG_VERSION[13:23]
